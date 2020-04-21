@@ -9,7 +9,6 @@ module ripple_counter #(
 
 wire [WID_COUNT:0]Q;
 wire [WID_COUNT-1:0]Q_n;
-
 assign Q[0] = clk;
 genvar i;
 generate
@@ -26,3 +25,6 @@ endgenerate
 
 assign result = Q_n;
 endmodule
+
+
+

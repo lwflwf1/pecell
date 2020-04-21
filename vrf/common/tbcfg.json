@@ -1,0 +1,14 @@
+{
+    "author"     : "Gong Yingfan",
+    "module_name": "pecell",
+    "agent"      : {
+        "type"       : ["apb", "inout"],
+        "inst_number": [1, 1],
+        "to_scb"     : [true, true],
+        "to_ref_mdl" : [true, true],
+        "to_sbr"     : [true, true]
+    },
+    "ref_mdl_to_scb": 1,
+    "rtl_top_path"  : "../rtl/pe_cell.v",
+    "rtl_path"      : "../rtl"
+}

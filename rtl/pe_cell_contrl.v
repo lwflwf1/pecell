@@ -6,12 +6,13 @@ module pe_cell_contrl #(
     parameter NUM_Y = COL/8,
     parameter WID_BUS = 8,
     parameter WID_ACC = 22,
-    parameter PE_ID = 7'd0,
     parameter DLY   = 1
 )(
 	input clk,    // Clock
 	input rst_n,  // Asynchronous reset active low
 	
+	input [6:0]pe_id, // PE Block ID
+
 	input [WID_BUS-1:0]wdata,
 	input wdata_valid,
 	input wdata_last,
@@ -115,7 +116,7 @@ always @(posedge clk or negedge rst_n) begin
 	if(~rst_n) begin
 		wdata_busy <= 1'b1;
 	end else begin
-		if(cs_n_neg == 1'b1) begin 
+		if(cs_n_neg == 1'b1 || cur_state == IDLE) begin 
 			wdata_busy <= #DLY 1'b0;
 		end
 		else if(wdata_last == 1'b1) begin 
@@ -606,7 +607,7 @@ always @(*) begin
 		default: cut_data_temp = {xin_sum[cnt_send_rdata][WID_ACC-15:WID_ACC-22]};
 	endcase
 
-	rdata = (id_cycle == 1'b0 && rdata_busy == 1'b0 && rdata_valid == 1'b1) ? {1'b0,PE_ID} : 
+	rdata = (id_cycle == 1'b0 && rdata_busy == 1'b0 && rdata_valid == 1'b1) ? {1'b0,pe_id} : 
 			(id_cycle == 1'b1 && rdata_busy == 1'b0 && rdata_valid == 1'b1) ? cut_data_temp : 'd0;
 end
 
@@ -663,3 +664,6 @@ always @(*) begin
 end
 
 endmodule
+
+
+

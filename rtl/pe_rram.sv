@@ -1,4 +1,4 @@
-`define EN_SYSN
+// `define EN_SYSN
 module pe_rram #(
     parameter WID_X = 6,
     parameter WID_Y = 8,
@@ -177,3 +177,6 @@ end
 endgenerate
 
 endmodule
+
+
+

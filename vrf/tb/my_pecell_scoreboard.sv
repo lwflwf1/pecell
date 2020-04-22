@@ -10,13 +10,17 @@
 //  Class: my_pecell_scoreboard
 //
 class my_pecell_scoreboard extends uvm_scoreboard;
-    `uvm_component_utils(my_pecell_scoreboard);
-    `uvm_analysis_imp_decl(_apb);
-    `uvm_analysis_imp_decl(_inout);
-    `uvm_analysis_imp_decl(_ref);
+    `uvm_component_utils(my_pecell_scoreboard)
+    `uvm_analysis_imp_decl(_apb)
+    `uvm_analysis_imp_decl(_inout)
+    `uvm_analysis_imp_decl(_ref)
+    typedef signed logic [`WID_BUS-1:0] vector[31:0]
+    
 
     //  Group: Config
     my_pecell_tb_config tbcfg;
+    vector act_q[$];
+    vector exp_q[$];
     
 
     //  Group: Variables
@@ -31,8 +35,8 @@ class my_pecell_scoreboard extends uvm_scoreboard;
     //  Group: Functions
     extern virtual function void write_apb(input my_pecell_apb_transaction tr);
     extern virtual function void write_inout(input my_pecell_inout_transaction tr);
-    extern virtual function void write_ref0(input my_pecell_transaction tr);
-
+    extern virtual function void write_ref(input my_pecell_transaction tr);
+    extern virtual function void compare(input my_pecell_inout_transaction act, input my_pecell_inout_transaction exp);
 
     //  Constructor: new
     function new(string name = "my_pecell_scoreboard", uvm_component parent);
@@ -128,6 +132,16 @@ endtask: shutdown_phase
 
 
 task my_pecell_scoreboard::run_phase(uvm_phase phase);
+    forever begin
+        if (exp_q.size() > 0 && act_q.size() > 0) begin
+            act = act_q.pop_back();
+            exp = exp_q.pop_back();
+            compare(act, exp);
+        end
+        else begin
+            @(posedge vif.clk);
+        end
+    end
 endtask: run_phase
 
 
@@ -153,10 +167,12 @@ endfunction
 
 
 function void my_pecell_scoreboard::write_inout(input my_pecell_inout_transaction tr);
+    act_q.push_back(tr);
 endfunction
 
 
-function void my_pecell_scoreboard::write_ref0(input my_pecell_transaction tr);
+function void my_pecell_scoreboard::write_ref(input my_pecell_transaction tr);
+    exp_q.push_back(tr);
 endfunction
 
 
@@ -166,3 +182,15 @@ endfunction
 /*----------------------------------------------------------------------------*/
 /*  Other Class Functions and Tasks                                           */
 /*----------------------------------------------------------------------------*/
+function void my_pecell_scoreboard::compare(input my_pecell_inout_transaction act, input my_pecell_inout_transaction exp);
+    if (act.id != exp.id) begin
+        `uvm_fatal(get_type_name(), $sformatf("transaction id mismatch!!!\nact.id = %d; exp_id = %d\n", act.id, exp.id))
+    end
+    foreach ( act.data[i] ) begin
+        if (act.data[i] != exp.data[i]) begin
+            `uvm_error(get_type_name(), $sformatf("[%d]: compare fail!\nact: %p\nexp: %p\n", act.id, act.data, exp.data))
+            return;
+        end
+    end
+    `uvm_info(get_type_name(), "compare success", UVM_MEDIUM)
+endfunction: name

@@ -10,7 +10,7 @@
 //  Class: my_pecell_env
 //
 class my_pecell_env extends uvm_env;
-    `uvm_component_utils(my_pecell_env);
+    `uvm_component_utils(my_pecell_env)
 
     //  Group: Config
     my_pecell_tb_config tbcfg;

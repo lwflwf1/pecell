@@ -10,9 +10,9 @@
 //  Class: my_pecell_subscriber
 //
 class my_pecell_subscriber extends uvm_component;
-    `uvm_component_utils(my_pecell_subscriber);
-    `uvm_analysis_imp_decl(_apb);
-    `uvm_analysis_imp_decl(_inout);
+    `uvm_component_utils(my_pecell_subscriber)
+    `uvm_analysis_imp_decl(_apb)
+    `uvm_analysis_imp_decl(_inout)
 
     //  Group: Config
     my_pecell_tb_config tbcfg;

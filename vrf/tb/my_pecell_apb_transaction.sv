@@ -12,13 +12,14 @@
 class my_pecell_apb_transaction extends uvm_sequence_item;
     typedef my_pecell_apb_transaction this_type_t;
     /*   Be careful to use `uvm_field_* marco     */
-    `uvm_object_utils(my_pecell_apb_transaction);
+    `uvm_object_utils(my_pecell_apb_transaction)
     typedef enum bit {READ, WRITE} kind_e;
 
     //  Group: Variables
     rand logic [3:0]addr;
     rand logic [7:0]data;
     rand kind_e kind;
+    rand logic [6:0]pe_id;
     
 
     //  Group: Constraint

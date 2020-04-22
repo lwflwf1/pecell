@@ -10,7 +10,7 @@
 //  Class: my_pecell_inout_sequencer
 //
 class my_pecell_inout_sequencer extends uvm_sequencer #(my_pecell_inout_transaction);
-    `uvm_component_utils(my_pecell_inout_sequencer);
+    `uvm_component_utils(my_pecell_inout_sequencer)
 
     //  Group: Config
     

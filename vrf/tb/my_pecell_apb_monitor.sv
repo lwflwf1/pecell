@@ -10,7 +10,7 @@
 //  Class: my_pecell_apb_monitor
 //
 class my_pecell_apb_monitor extends uvm_monitor;
-    `uvm_component_utils(my_pecell_apb_monitor);
+    `uvm_component_utils(my_pecell_apb_monitor)
 
     //  Group: Config
     my_pecell_tb_config tbcfg;

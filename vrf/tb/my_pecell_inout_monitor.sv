@@ -10,11 +10,11 @@
 //  Class: my_pecell_inout_monitor
 //
 class my_pecell_inout_monitor extends uvm_monitor;
-    `uvm_component_utils(my_pecell_inout_monitor);
+    `uvm_component_utils(my_pecell_inout_monitor)
 
     //  Group: Config
     my_pecell_tb_config tbcfg;
-    
+    unsigned int tr_id = 0;
 
     //  Group: Variables
     virtual my_pecell_interface vif;
@@ -26,7 +26,8 @@ class my_pecell_inout_monitor extends uvm_monitor;
     
 
     //  Group: Functions
-    extern virtual virtual task collect_one_pkt(input my_pecell_inout_transaction tr);
+    extern virtual virtual task collect_rdata_pkt(ref my_pecell_inout_transaction tr);
+    extern virtual virtual task collect_wdata_pkt(ref my_pecell_inout_transaction tr);
 
     //  Constructor: new
     function new(string name = "my_pecell_inout_monitor", uvm_component parent);
@@ -127,10 +128,21 @@ endtask: shutdown_phase
 task my_pecell_inout_monitor::run_phase(uvm_phase phase);
     my_pecell_inout_transaction tr;
     wait(vif.rst_n == 1);
-    forever begin
-        tr = my_pecell_inout_transaction::type_id::create("tr");
-        collect_one_pkt(tr);
-    end
+    fork
+        forever begin
+            tr = my_pecell_inout_transaction::type_id::create("tr");
+            collect_rdata_pkt(tr);
+            tr_id++;
+            tr.id = tr_id;
+            to_sbr_ap.write(tr);
+        end
+        forever begin
+            tr = my_pecell_inout_transaction::type_id::create("tr");
+            collect_wdata_pkt(tr);
+            to_ref_mdl_ap.write(tr);
+            to_sbr_ap.write(tr);
+        end
+    join
 endtask: run_phase
 
 
@@ -151,7 +163,40 @@ endfunction: extract_phase
 /*----------------------------------------------------------------------------*/
 /*  Other Class Functions and Tasks                                           */ 
 /*----------------------------------------------------------------------------*/
-task my_pecell_inout_monitor::collect_one_pkt(input my_pecell_inout_transaction tr);
-    @(posedge vif.clk);
-endtask: collect_one_pkt
+task my_pecell_inout_monitor::collect_rdata_pkt(ref my_pecell_inout_transaction tr);
+    @(vif.inout_mon_cb);
+    for (int i = 0; i < 32;)
+        if (vif.inout_mon_cb.rdata_valid == 'b1 && vif.inout_mon_cb.rdata_busy == 'b0) begin
+            tr.data[i] == vif.inout_mon_cb.rdata;
+            i++;
+        end
+        else begin
+            @(vif.inout_mon_cb);
+        end
+    end
+endtask: collect_rdata_pkt
 
+task my_pecell_inout_monitor::collect_wdata_pkt(ref my_pecell_inout_transaction tr);
+    @(vif.inout_mon_cb);
+    forever begin
+        if (vir.inout_mon_cb.cvalid == 'b1) begin
+            tr.waddr = vif.inout_mon_cb.waddr;
+            tr.work_mode = vif.inout_mon_cb.work_mode
+            break;
+        end
+        else begin
+            @(vif.inout_mon_cb);
+        end
+    end
+    if (tr.work_mode != my_pecell_inout_transaction::IDLE) begin
+        for (int i = 0; i < 35;) begin
+            if (vif.inout_mon_cb.wdata_valid == 'b1 && vif.inout_mon_cb.wdata_busy == 'b0) begin
+                tr.data[i] = vif.inout_mon_cb.wdata;
+                i++;
+            end
+            else begin
+                @(vif.inout_mon_cb);
+            end
+        end
+    end
+endtask

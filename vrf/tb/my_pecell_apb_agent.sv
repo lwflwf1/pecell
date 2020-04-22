@@ -10,7 +10,7 @@
 //  Class: my_pecell_apb_agent
 //
 class my_pecell_apb_agent extends uvm_agent;
-    `uvm_component_utils(my_pecell_apb_agent);
+    `uvm_component_utils(my_pecell_apb_agent)
 
     //  Group: Config
     my_pecell_tb_config tbcfg;

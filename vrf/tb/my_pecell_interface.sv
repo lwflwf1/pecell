@@ -21,7 +21,7 @@ interface my_pecell_interface
     // DUT ports
     logic clk;
     logic rst_n;
-    logic pe_id;
+    logic [6:0]pe_id;
     logic psel;
     logic [3:0]paddr;
     logic pwrite;

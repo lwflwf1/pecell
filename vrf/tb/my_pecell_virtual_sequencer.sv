@@ -10,7 +10,7 @@
 //  Class: my_pecell_virtual_sequencer
 //
 class my_pecell_virtual_sequencer extends uvm_sequencer;
-    `uvm_component_utils(my_pecell_virtual_sequencer);
+    `uvm_component_utils(my_pecell_virtual_sequencer)
 
     //  Group: Config
     my_pecell_tb_config tbcfg;

@@ -10,7 +10,7 @@
 //  Class: my_pecell_base_test
 //
 class my_pecell_base_test extends uvm_test;
-    `uvm_component_utils(my_pecell_base_test);
+    `uvm_component_utils(my_pecell_base_test)
 
     //  Group: Config
     my_pecell_tb_config tbcfg;

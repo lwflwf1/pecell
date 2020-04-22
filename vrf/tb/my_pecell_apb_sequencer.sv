@@ -10,7 +10,7 @@
 //  Class: my_pecell_apb_sequencer
 //
 class my_pecell_apb_sequencer extends uvm_sequencer #(my_pecell_apb_transaction);
-    `uvm_component_utils(my_pecell_apb_sequencer);
+    `uvm_component_utils(my_pecell_apb_sequencer)
 
     //  Group: Config
     

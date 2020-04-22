@@ -10,12 +10,22 @@
 //  Class: my_pecell_reference_model
 //
 class my_pecell_reference_model extends uvm_component;
-    `uvm_component_utils(my_pecell_reference_model);
-    `uvm_analysis_imp_decl(_apb);
-    `uvm_analysis_imp_decl(_inout);
+    `uvm_component_utils(my_pecell_reference_model)
+    `uvm_analysis_imp_decl(_apb)
+    `uvm_analysis_imp_decl(_inout)
+    typedef signed logic [`WID_BUS:0] in_vector_t[35:0];
+    
 
     //  Group: Config
     my_pecell_tb_config tbcfg;
+    signed logic [`WID_BUS:0] weight[31:0][35:0]
+    in_vector_t in_vector_q[$];
+    bit [7:0]regs[4:0];
+    signed logic [`WID_BUS-1:0] rdata[31:0];
+    int rdata_tmp;
+    unsigned int tr_id = 0;
+    virtual my_pecell_interface vif;
+    
 
 
     //  Group: Variables
@@ -24,12 +34,13 @@ class my_pecell_reference_model extends uvm_component;
     //  Group: Ports
     uvm_analysis_imp_apb #(my_pecell_apb_transaction, my_pecell_reference_model) imp_apb;
     uvm_analysis_imp_inout #(my_pecell_inout_transaction, my_pecell_reference_model) imp_inout;
-    uvm_analysis_port #(my_pecell_transaction) to_scb_ap;
+    uvm_analysis_port #(my_pecell_inout_transaction) to_scb_ap;
 
 
     //  Group: Functions
     extern virtual function void write_apb(input my_pecell_apb_transaction tr);
     extern virtual function void write_inout(input my_pecell_inout_transaction tr);
+    extern virtual function void calculate(ref my_pecell_inout_transaction tr);
 
     
     //  Constructor: new
@@ -83,6 +94,9 @@ function void my_pecell_reference_model::build_phase(uvm_phase phase);
     if (!uvm_config_db#(my_pecell_tb_config)::get(this, "", "tbcfg", tbcfg)) begin
         `uvm_fatal(get_type_name(), "cannot get tbcfg")
     end
+    if (!uvm_config_db#(virtual my_pecell_interface)::get(this, "", "vif", vif)) begin
+        `uvm_fatal(get_type_name(), "cannot get interface")
+    end
 
     // create ports
     imp_apb = new("imp_apb", this);
@@ -127,6 +141,20 @@ endtask: shutdown_phase
 
 
 task my_pecell_reference_model::run_phase(uvm_phase phase);
+    my_pecell_inout_transaction tr;
+    forever begin
+        if (in_vector_q.size() > 0) begin
+            tr = my_pecell_inout_transaction::type_id::create("tr");
+            tr.data = new[32];
+            calculate(tr);
+            tr_id++;
+            tr.id = tr_id;
+            to_scb_ap.write(tr);
+        end
+        else begin
+            @(posedge vif.clk);
+        end
+    end
 endtask: run_phase
 
 
@@ -151,6 +179,12 @@ endfunction
 
 
 function void my_pecell_reference_model::write_inout(input my_pecell_inout_transaction tr);
+    if (tr.work_mode == my_pecell_inout_transaction::WRITE) begin
+        weight[tr.waddr] = tr.data;
+    end
+    else if (tr.work_mode == my_pecell_inout_transaction::CALCULATE || tr.work_mode == my_pecell_inout_transaction::READ) begin
+        in_vector_q.push_back(tr.data);
+    end
 endfunction
 
 
@@ -159,3 +193,13 @@ endfunction
 /*----------------------------------------------------------------------------*/
 /*  Other Class Functions and Tasks                                           */
 /*----------------------------------------------------------------------------*/
+function void my_pecell_reference_model::calculate(ref my_pecell_inout_transaction tr);
+    in_vector_t vector = in_vector_q.pop_back();
+    foreach (weight[i]) begin
+        foreach ( weight[,j] ) begin
+            rdata_tmp += weight[i][j] * vector[j] 
+        end
+        tr.data[i] = {rdata_tmp[0], rdata_tmp[20:14]}
+    end
+endfunction: calculate
+

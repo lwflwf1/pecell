@@ -10,10 +10,11 @@
 //  Class: my_pecell_apb_driver
 //
 class my_pecell_apb_driver extends uvm_driver #(my_pecell_apb_transaction);
-    `uvm_component_utils(my_pecell_apb_driver);
+    `uvm_component_utils(my_pecell_apb_driver)
 
     //  Group: Config
     my_pecell_tb_config tbcfg;
+    logic [6:0] pe_id;
     
 
     //  Group: Variables
@@ -26,6 +27,7 @@ class my_pecell_apb_driver extends uvm_driver #(my_pecell_apb_transaction);
     //  Constructor: new
     function new(string name = "my_pecell_apb_driver", uvm_component parent);
         super.new(name, parent);
+        std::randomize(pe_id);
     endfunction: new
 
     /*---  UVM Build Phases            ---*/
@@ -114,6 +116,7 @@ endtask: shutdown_phase
 
 task my_pecell_apb_driver::run_phase(uvm_phase phase);
     wait(vif.rst_n == 1);
+    vif.pe_id <= pe_id;
     @(vif.apb_drv_cb);
     forever begin
         seq_item_port.try_next_item(req);

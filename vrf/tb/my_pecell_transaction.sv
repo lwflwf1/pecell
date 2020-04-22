@@ -12,7 +12,7 @@
 class my_pecell_transaction extends uvm_sequence_item;
     typedef my_pecell_transaction this_type_t;
     /*   Be careful to use `uvm_field_* marco     */
-    `uvm_object_utils(my_pecell_transaction);
+    `uvm_object_utils(my_pecell_transaction)
 
     //  Group: Variables
     

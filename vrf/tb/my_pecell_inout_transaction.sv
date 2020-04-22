@@ -12,7 +12,7 @@
 class my_pecell_inout_transaction extends uvm_sequence_item;
     typedef my_pecell_inout_transaction this_type_t;
     /*   Be careful to use `uvm_field_* marco     */
-    `uvm_object_utils(my_pecell_inout_transaction);
+    `uvm_object_utils(my_pecell_inout_transaction)
     typedef enum logic[1:0] {IDLE, CALCULATE, READ, WRITE} work_mode_e;
     typedef enum logic {LOW, RAND} rdata_busy_mode_e;
 
@@ -20,11 +20,12 @@ class my_pecell_inout_transaction extends uvm_sequence_item;
     rand work_mode_e work_mode;
     rand int cvalid_after_csn;
     rand logic [4:0]waddr;
-    rand signed logic [`WID_BUS-1:0]wdata[];
+    rand signed logic [`WID_BUS-1:0]data[];
     rand int wdata_interval_cycle[];
     rand int wdata_len;
     rand int csn_undo_cycle; //-1: do not undo cs_n
     rand rdata_busy_mode_e rdata_busy_mode;
+    unsigned int id = 0;
 
     //  Group: Constraint
     constraint addr_c {
@@ -33,7 +34,7 @@ class my_pecell_inout_transaction extends uvm_sequence_item;
 
     constraint wdata_len_c {
         soft wdata_len == 36;
-        wdata.size() == wdata_len;
+        data.size() == wdata_len;
         wdata_interval_time.size() == wdata_len;
     }
 

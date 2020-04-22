@@ -10,11 +10,12 @@
 //  Class: my_pecell_inout_driver
 //
 class my_pecell_inout_driver extends uvm_driver #(my_pecell_inout_transaction);
-    `uvm_component_utils(my_pecell_inout_driver);
-
+    `uvm_component_utils(my_pecell_inout_driver)
+    typedef enum logic {LOW, RANDOM} rdata_busy_mode_e;
     //  Group: Config
     my_pecell_tb_config tbcfg;
-    
+    logic rdata_busy;
+
 
     //  Group: Variables
     virtual my_pecell_interface vif;
@@ -22,6 +23,7 @@ class my_pecell_inout_driver extends uvm_driver #(my_pecell_inout_transaction);
     //  Group: Functions
     extern virtual task drive_one_pkt(input my_pecell_inout_transaction req);
     extern virtual task drive_idle();
+    extern virtual task drive_rdata_busy();
 
     //  Constructor: new
     function new(string name = "my_pecell_inout_driver", uvm_component parent);
@@ -75,6 +77,9 @@ function void my_pecell_inout_driver::build_phase(uvm_phase phase);
     if (!uvm_config_db#(virtual my_pecell_interface)::get(this, "", "vif", vif)) begin
         `uvm_fatal(get_type_name(), "cannot get interface")
     end
+    if (!uvm_config_db#(rdata_busy_mode_e)::get(this, "", "rdata_busy_mode", rdata_busy_mode)) begin
+        `uvm_fatal(get_type_name(), "cannot get rdata_busy_mode")
+    end
 endfunction: build_phase
 
 
@@ -114,17 +119,29 @@ endtask: shutdown_phase
 
 task my_pecell_inout_driver::run_phase(uvm_phase phase);
     wait(vif.rst_n == 1);
-    forever begin
-        seq_item_port.try_next_item(req);
-        if (req != null) begin
-            seq_item_port.item_done();
-            drive_one_pkt(req);
+    fork
+        forever begin
+            seq_item_port.try_next_item(req);
+            if (req != null) begin
+                seq_item_port.item_done();
+                drive_one_pkt(req);
+            end
+            else begin
+                // insert an idle cycle
+                drive_idle();
+            end
         end
-        else begin
-            // insert an idle cycle
-            drive_idle();
+        begin
+            if (rdata_busy_mode == RANDOM) begin
+                forever begin
+                    @(vif.inout_drv_cb);
+                    std::randomize(rdata_busy);
+                    vif.inout_drv_cb.rdata_busy <= rdata_busy;
+                end
+            end
+            else vif.inout_drv_cb.rdata_busy <= 'b0;
         end
-    end
+    join
 endtask: run_phase
 
 /*----------------------------------------------------------------------------*/
@@ -165,7 +182,7 @@ task my_pecell_inout_driver::drive_one_pkt(input my_pecell_inout_transaction req
     foreach(wdata[i]) begin
         repeat(req.wdata_interval_cycle[i]) @(vif.inout_drv_cb);
         vif.inout_drv_cb.wdata_valid <= 'b1;
-        vif.inout_drv_cb.wdata <= req.wdata[i];
+        vif.inout_drv_cb.wdata <= req.data[i];
         if (i == req.wdata_len - 1) begin
             vif.inout_drv_cb.wdata_last <= 'b1;
         end
@@ -193,3 +210,8 @@ task my_pecell_inout_driver::drive_idle();
     vif.inout_drv_cb.cs_n <= 'b1;
     vif.inout_drv_cb.cvalid <= 'b0;
 endtask: drive_idle
+
+
+task my_pecell_inout_driver::drive_rdata_busy();
+endtask: namedrive_rada::
+

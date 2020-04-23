@@ -25,6 +25,7 @@ class my_pecell_reference_model extends uvm_component;
     int rdata_tmp;
     unsigned int tr_id = 0;
     virtual my_pecell_interface vif;
+    my_pecell_register_model m_regmdl;
     
 
 
@@ -108,6 +109,9 @@ endfunction: build_phase
 
 function void my_pecell_reference_model::connect_phase(uvm_phase phase);
     super.connect_phase(phase);
+    if (m_regmdl == null) begin
+        `uvm_fatal(get_type_name(), "can not get m_regmdl")
+    end
 endfunction: connect_phase
 
 
@@ -196,11 +200,35 @@ endfunction
 /*----------------------------------------------------------------------------*/
 function void my_pecell_reference_model::calculate(ref my_pecell_inout_transaction tr);
     in_vector_t vector = in_vector_q.pop_back();
+    uvm_status_e status;
+    uvm_reg_data_t value;
     foreach (weight[i]) begin
         foreach ( weight[,j] ) begin
             rdata_tmp += weight[i][j] * vector[j] 
         end
-        tr.data[i] = {rdata_tmp[0], rdata_tmp[20:14]}
+        m_regmdl.reg_reuse.read(status, value, UVM_FRONTDOOR);
+        if (status != UVM_IS_OK) begin
+            `uvm_fatal(get_type_name(), "read reg_reuse fail")
+        end
+        case (value[7:4])
+            4'd0: tr.data[i] = {rdata_tmp[0], rdata_tmp[20:14]};
+            4'd1: tr.data[i] = {rdata_tmp[0], rdata_tmp[19:13]};
+            4'd2: tr.data[i] = {rdata_tmp[0], rdata_tmp[18:12]};
+            4'd3: tr.data[i] = {rdata_tmp[0], rdata_tmp[17:11]};
+            4'd4: tr.data[i] = {rdata_tmp[0], rdata_tmp[16:10]};
+            4'd5: tr.data[i] = {rdata_tmp[0], rdata_tmp[15:9]};
+            4'd6: tr.data[i] = {rdata_tmp[0], rdata_tmp[14:8]};
+            4'd7: tr.data[i] = {rdata_tmp[0], rdata_tmp[13:7]};
+            4'd8: tr.data[i] = {rdata_tmp[0], rdata_tmp[12:6]};
+            4'd9: tr.data[i] = {rdata_tmp[0], rdata_tmp[11:5]};
+            4'd10: tr.data[i] = {rdata_tmp[0], rdata_tmp[10:4]};
+            4'd11: tr.data[i] = {rdata_tmp[0], rdata_tmp[9:3]};
+            4'd12: tr.data[i] = {rdata_tmp[0], rdata_tmp[8:2]};
+            4'd13: tr.data[i] = {rdata_tmp[0], rdata_tmp[7:1]};
+            4'd14: tr.data[i] = {rdata_tmp[0], rdata_tmp[6:0]};
+            default: tr.data[i] = {rdata_tmp[7:0]};
+        endcase
+        
     end
 endfunction: calculate
 

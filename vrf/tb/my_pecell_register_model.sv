@@ -84,7 +84,7 @@ class register_reuse extends uvm_reg;
 endclass: register_reuse
 
 
-//  Class: my_pecell_register_modelj
+//  Class: my_pecell_register_model
 //
 class my_pecell_register_model extends uvm_reg_block;
     `uvm_object_utils(my_pecell_register_model);

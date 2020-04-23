@@ -18,6 +18,7 @@ class my_pecell_base_test extends uvm_test;
 
     //  Group: Variables
     my_pecell_env m_env;
+    my_pecell_register_model m_regmdl;
     
 
     //  Group: Functions
@@ -74,11 +75,12 @@ function void my_pecell_base_test::build_phase(uvm_phase phase);
 
     // create component
     m_env = my_pecell_env::type_id::create("m_env", this);
+    m_regmdl = my_pecell_register_model::type_id::create("m_regmdl");
 
     // set config
     uvm_config_db#(virtual my_pecell_interface)::set(this, "m_env.*", "vif", my_pecell_top.m_if);
     uvm_config_db#(my_pecell_tb_config)::set(this, "m_env*", "tbcfg", tbcfg);
-
+    uvm_config_db#(my_pecell_register_model)::set(this, "m_env", "regmdl", m_regmdl);
     // set timeout
     `ifndef PRESURE_TEST
     uvm_top.set_timeout(`TIMEOUT, 0);

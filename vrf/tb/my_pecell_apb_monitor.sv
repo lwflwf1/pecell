@@ -23,10 +23,12 @@ class my_pecell_apb_monitor extends uvm_monitor;
     uvm_analysis_port #(my_pecell_apb_transaction) to_ref_mdl_ap;
     uvm_analysis_port #(my_pecell_apb_transaction) to_scb_ap;
     uvm_analysis_port #(my_pecell_apb_transaction) to_sbr_ap;
+    uvm_analysis_port #(my_pecell_apb_transaction) ap;
     
 
     //  Group: Functions
-    extern virtual virtual task collect_one_pkt(input my_pecell_apb_transaction tr);
+    extern virtual virtual task collect_wdata();
+    extern virtual virtual task collect_rdata();
 
     //  Constructor: new
     function new(string name = "my_pecell_apb_monitor", uvm_component parent);
@@ -86,6 +88,7 @@ function void my_pecell_apb_monitor::build_phase(uvm_phase phase);
     to_ref_mdl_ap = new("to_ref_mdl_ap", this);
     to_scb_ap = new("to_scb_ap", this);
     to_sbr_ap = new("to_sbr_ap", this);
+    ap = new("ap", this);
 
 endfunction: build_phase
 
@@ -125,12 +128,15 @@ endtask: shutdown_phase
 
 
 task my_pecell_apb_monitor::run_phase(uvm_phase phase);
-    my_pecell_apb_transaction tr;
     wait(vif.rst_n == 1);
-    forever begin
-        tr = my_pecell_apb_transaction::type_id::create("tr");
-        collect_one_pkt(tr);
-    end
+    fork
+        forever begin
+            collect_wdata(tr);
+        end
+        forever begin
+            collect_rdata(tr);
+        end
+    join
 endtask: run_phase
 
 
@@ -151,7 +157,29 @@ endfunction: extract_phase
 /*----------------------------------------------------------------------------*/
 /*  Other Class Functions and Tasks                                           */ 
 /*----------------------------------------------------------------------------*/
-task my_pecell_apb_monitor::collect_one_pkt(input my_pecell_apb_transaction tr);
-    @(posedge vif.clk);
-endtask: collect_one_pkt
+task my_pecell_apb_monitor::collect_wdata();
+    my_pecell_apb_transaction tr;
+    @(vif.apb_mon_cb);
+    if (vif.apb_mon_cb.pwrite == 'b1 && vif.apb_mon_cb.psel == 'b1 && vif.apb_mon_cb.penable == 'b1 && vif.apb_mon_cb.pready == 'b1) begin
+        tr = my_pecell_apb_transaction::type_id::create("tr");
+        tr.addr = vif.apb_mon_cb.pwaddr;
+        tr.data = vif.apb_mon_cb.pwdata;
+        tr.kind = my_pecell_apb_transaction::WRITE;
+        ap.write(tr);
+    end
+endtask: collect_wdata
+
+
+task my_pecell_apb_monitor::collect_rdata();
+    my_pecell_apb_transaction tr;
+    @(vif.apb_mon_cb);
+    if (vif.apb_mon_cb.psel == 'b1 && vif.apb_mon_cb.penable == 'b1 && vif.apb_mon_cb.pready == 'b1 && vif.apb_mon_cb.pwrite == 'b0) begin
+        tr = my_pecell_apb_transaction::type_id::create("tr");
+        tr.data = vif.apb_mon_cb.prdata;
+        tr.addr = vif.apb_mon_cb.praddr;
+        tr.kind = my_pecell_apb_transaction::READ;
+        ap.write(tr);
+    end
+endtask: name
+
 

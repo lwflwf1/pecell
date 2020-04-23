@@ -11,6 +11,7 @@
 //
 class my_pecell_env extends uvm_env;
     `uvm_component_utils(my_pecell_env)
+    typedef uvm_reg_predictor #(my_pecell_apb_transaction) my_pecell_predictor;
 
     //  Group: Config
     my_pecell_tb_config tbcfg;
@@ -23,6 +24,9 @@ class my_pecell_env extends uvm_env;
     my_pecell_reference_model m_ref_mdl;
     my_pecell_subscriber m_sbr;
     my_pecell_virtual_sequencer m_vsqr;
+    my_pecell_adapter m_adapter;
+    my_pecell_predictor m_predictor;
+    my_pecell_register_model m_regmdl;
 
 
     //  Group: Functions
@@ -80,14 +84,21 @@ function void my_pecell_env::build_phase(uvm_phase phase);
     m_sbr     = my_pecell_subscriber::type_id::create("m_sbr", this);
     m_scb     = my_pecell_scoreboard::type_id::create("m_scb", this);
     m_vsqr    = my_pecell_virtual_sequencer::type_id::create("m_vsqr", this);
+    m_adapter = my_pecell_adapter::type_id::create("m_adapter");
+    m_predictor = my_pecell_predictor::type_id::create("m_predictor", this);
     
     // get config
     if(!uvm_config_db#(my_pecell_tb_config)::get(this, "", "tbcfg", tbcfg)) begin
         `uvm_fatal(get_type_name(), "cannot get tbcfg!")
     end
+    if(!uvm_config_db#(my_pecell_register_model)::get(this, "", "regmdl", m_regmdl)) begin
+        `uvm_fatal(get_type_name(), "cannot get m_regmdl!")
+    end
     // set config
     m_pecell_apb_agt.is_active = tbcfg.apb_agt_is_active;
     m_pecell_inout_agt.is_active = tbcfg.inout_agt_is_active;
+    m_regmdl.build();
+    m_regmdl.reset();
     
 endfunction: build_phase
 
@@ -106,6 +117,13 @@ function void my_pecell_env::connect_phase(uvm_phase phase);
     m_pecell_apb_agt.to_sbr_ap.connect(m_sbr.imp_apb);
     m_pecell_inout_agt.to_sbr_ap.connect(m_sbr.imp_inout);
     m_ref_mdl.to_scb_ap.connect(m_scb.imp_ref);
+
+    
+    m_regmdl.map.set_sequencer(m_pecell_apb_agt.sqr, m_adapter);
+    m_predictor.map = m_regmdl.map;
+    m_predictor.adapter = m_adapter;
+    m_pecell_apb_agt.mon.ap.connect(m_predictor.bus_in);
+    m_ref_mdl.m_regmdl = m_regmdl;
 
 endfunction: connect_phase
 

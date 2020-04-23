@@ -44,7 +44,7 @@ interface my_pecell_interface
     logic [4:0]waddr;
 
     // clocking block
-    clocking apb_drv_cb @(posedge clk);
+    default clocking apb_drv_cb @(posedge clk);
         output psel;
         output paddr;
         output pwrite;
@@ -96,5 +96,10 @@ interface my_pecell_interface
         input waddr;
     endclocking
     // assert and cover property
-    
+    property rlast_p;
+        @(posedge clk) (rdata_valid && !rdata_busy)[->33] |-> rlast;
+    endproperty
+
+    rlast_a: assert property(rlast_p) else `uvm_error("assert", "assert rlast fail")
+    cover property(rlast_p);
 endinterface: my_pecell_interface

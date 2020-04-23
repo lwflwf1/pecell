@@ -150,6 +150,7 @@ task my_pecell_reference_model::run_phase(uvm_phase phase);
             tr_id++;
             tr.id = tr_id;
             to_scb_ap.write(tr);
+            `uvm_info(get_type_name(), "send one packet", UVM_MEDIUM)
         end
         else begin
             @(posedge vif.clk);

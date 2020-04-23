@@ -135,12 +135,14 @@ task my_pecell_inout_monitor::run_phase(uvm_phase phase);
             tr_id++;
             tr.id = tr_id;
             to_sbr_ap.write(tr);
+            `uvm_info({get_type_name(), ": rdata"}, "collect one packet", UVM_MEDIUM)
         end
         forever begin
             tr = my_pecell_inout_transaction::type_id::create("tr");
             collect_wdata_pkt(tr);
             to_ref_mdl_ap.write(tr);
             to_sbr_ap.write(tr);
+            `uvm_info({get_type_name(), ": wdata"}, "collect one packet", UVM_MEDIUM)
         end
     join
 endtask: run_phase

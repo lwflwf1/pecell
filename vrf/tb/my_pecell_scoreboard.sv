@@ -21,6 +21,7 @@ class my_pecell_scoreboard extends uvm_scoreboard;
     my_pecell_tb_config tbcfg;
     vector act_q[$];
     vector exp_q[$];
+    virtual my_pecell_interface vif;
     
 
     //  Group: Variables
@@ -29,13 +30,13 @@ class my_pecell_scoreboard extends uvm_scoreboard;
     //  Group: Ports
     uvm_analysis_imp_apb #(my_pecell_apb_transaction, my_pecell_scoreboard) imp_apb;
     uvm_analysis_imp_inout #(my_pecell_inout_transaction, my_pecell_scoreboard) imp_inout;
-    uvm_analysis_imp_ref #(my_pecell_transaction, my_pecell_scoreboard) imp_ref;
+    uvm_analysis_imp_ref #(my_pecell_inout_transaction, my_pecell_scoreboard) imp_ref;
 
 
     //  Group: Functions
     extern virtual function void write_apb(input my_pecell_apb_transaction tr);
     extern virtual function void write_inout(input my_pecell_inout_transaction tr);
-    extern virtual function void write_ref(input my_pecell_transaction tr);
+    extern virtual function void write_ref(input my_pecell_inout_transaction tr);
     extern virtual function void compare(input my_pecell_inout_transaction act, input my_pecell_inout_transaction exp);
 
     //  Constructor: new
@@ -88,6 +89,10 @@ function void my_pecell_scoreboard::build_phase(uvm_phase phase);
     if (!uvm_config_db#(my_pecell_tb_config)::get(this, "", "tbcfg", tbcfg)) begin
         `uvm_fatal(get_type_name(), "cannot get tbcfg")
     end
+    if (!uvm_config_db#(virtual my_pecell_interface)::get(this, "", "vif", vif)) begin
+        `uvm_fatal(get_type_name(), "cannot get interface")
+    end
+
 
     // create ports
     imp_apb = new("imp_apb", this);
@@ -171,7 +176,7 @@ function void my_pecell_scoreboard::write_inout(input my_pecell_inout_transactio
 endfunction
 
 
-function void my_pecell_scoreboard::write_ref(input my_pecell_transaction tr);
+function void my_pecell_scoreboard::write_ref(input my_pecell_inout_transaction tr);
     exp_q.push_back(tr);
 endfunction
 

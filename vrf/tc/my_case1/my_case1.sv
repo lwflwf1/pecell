@@ -14,6 +14,8 @@ class my_pecell_virtual_sequence extends uvm_sequence;
     `uvm_declare_p_sequencer(my_pecell_virtual_sequencer)
 
     //  Group: Sequences
+    my_pecell_apb_sequence m_apb_seq;
+    my_pecell_inout_sequence m_inout_seq;
     
 
     //  Group: Functions
@@ -49,7 +51,10 @@ task my_pecell_virtual_sequence::body();
     --------------------------------------------------------------*/
 
     /* note: Use tb_config to control whether to start a sequence */
-    repeat(1000) @(posedge my_pecell_top.m_if.clk);
+    m_apb_seq = my_pecell_apb_sequence::type_id::create("m_apb_seq");
+    m_inout_seq = my_pecell_inout_sequence::type_id::create("m_inout_seq");
+    m_apb_seq.start(p_sequencer.m_pecell_apb_sqr);
+    m_inout_seq.start(p_sequencer.m_pecell_inout_sqr);
 endtask: body
 
 
@@ -73,6 +78,88 @@ endtask: post_start
 /*---------------------------------------------------*/
 /* sequeces                                          */
 /*---------------------------------------------------*/
+
+//  Class:my_pecell_apb_sequence
+//
+class my_pecell_apb_sequence extends uvm_sequence;
+    `uvm_object_utils(my_pecell_apb_sequence);
+
+    //  Group: Variables
+    my_pecell_register_model m_regmdl;
+    uvm_status_e status;
+    uvm_reg_data_t value[0:4] = '{4{1}, 8'b0000_0001};
+
+    //  Group: Functions
+
+    //  Constructor: new
+    function new(string name = "my_pecell_apb_sequence");
+        super.new(name);
+    endfunction: new
+
+    extern virtual task body();
+    
+endclass: my_pecell_apb_sequence
+
+
+task my_case1::body();
+    m_regmdl.reg_set_cycle0.write(status, value[0], UVM_FRONTDOOR, .parent(this));
+    m_regmdl.reg_set_cycle1.write(status, value[1], UVM_FRONTDOOR, .parent(this));
+    m_regmdl.reg_set_cycle2.write(status, value[2], UVM_FRONTDOOR, .parent(this));
+    m_regmdl.reg_set_cycle3.write(status, value[3], UVM_FRONTDOOR, .parent(this));
+    m_regmdl.reg_reuse.write(status, value[4], UVM_FRONTDOOR, .parent(this));
+    `uvm_info(get_type_name(), $sformatf("  set register done\n
+                                            set reg_set_cycle0: %d\n
+                                            set reg_set_cycle1: %d\n
+                                            set reg_set_cycle2: %d\n
+                                            set reg_set_cycle3: %d\n
+                                            set reg_reuse: %d\n", value[0], value[1], value[2], value[3], value[4]), UVM_MEDIUM)
+endtask: body
+
+
+
+//  Class: my_pecell_inout_sequence
+//
+class my_pecell_inout_sequence extends uvm_sequence;
+    `uvm_object_utils(my_pecell_inout_sequence);
+
+    //  Group: Variables
+    my_pecell_inout_transaction tr;
+    
+
+    //  Group: Functions
+
+    //  Constructor: new
+    function new(string name = "my_pecell_inout_sequence");
+        super.new(name);
+    endfunction: new
+
+    extern virtual task body();
+
+    
+endclass: my_pecell_inout_sequence
+
+task my_case1::body();
+    for(int i = 0; i < 32; i++)
+        tr = my_pecell_inout_sequence::type_id::create("tr");
+        start_item(tr);
+        tr.randomize() with {
+            foreach(data[j]) data[j] == j;
+            addr == local::i;
+            work_mode == my_pecell_inout_transaction::WRITE;
+        };
+        finish_item(tr);
+        `uvm_info(get_type_name(), "send one weight vector to driver", UVM_MEDIUM)
+    end
+    tr = my_pecell_inout_sequence::type_id::create("tr");
+    start_item(tr);
+    tr.randomize() with {
+        foreach(data[j]) data[j] == 1;
+        work_mode == my_pecell_inout_transaction::CALCULATE;
+    };
+    finish_item(tr);
+    `uvm_info(get_type_name(), "send one input vector to driver", UVM_MEDIUM)
+endtask: body
+
 
 
 
@@ -149,6 +236,8 @@ function void my_case1::build_phase(uvm_phase phase);
     tbcfg.inout_agt_is_active = UVM_ACTIVE;
 
     super.build_phase(phase);
+    m_vseq = my_pecell_virtual_sequence::type_id::create("m_vseq");
+    m_vseq.m_apb_seq.m_regmdl = m_regmdl;
 
 endfunction: build_phase
 
@@ -200,7 +289,6 @@ endtask: shutdown_phase
 task my_case1::run_phase(uvm_phase phase);
     super.run_phase(phase);
     // start vseq on vsqr
-    m_vseq = my_pecell_virtual_sequence::type_id::create("m_vseq");
     m_vseq.starting_phase = phase;
     m_vseq.start(m_env.m_vsqr);
 endtask: run_phase

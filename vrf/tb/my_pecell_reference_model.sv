@@ -21,11 +21,12 @@ class my_pecell_reference_model extends uvm_component;
     signed logic [`WID_BUS:0] weight[31:0][35:0]
     in_vector_t in_vector_q[$];
     bit [7:0]regs[4:0];
-    signed logic [`WID_BUS-1:0] rdata[31:0];
+    signed logic [`WID_BUS-1:0] rdata[32:0];
     int rdata_tmp;
     unsigned int tr_id = 0;
     virtual my_pecell_interface vif;
     my_pecell_register_model m_regmdl;
+    logic [6:0] pe_id;
     
 
 
@@ -98,6 +99,7 @@ function void my_pecell_reference_model::build_phase(uvm_phase phase);
     if (!uvm_config_db#(virtual my_pecell_interface)::get(this, "", "vif", vif)) begin
         `uvm_fatal(get_type_name(), "cannot get interface")
     end
+    pe_id = tbcfg.pe_id;
 
     // create ports
     imp_apb = new("imp_apb", this);
@@ -149,7 +151,7 @@ task my_pecell_reference_model::run_phase(uvm_phase phase);
     forever begin
         if (in_vector_q.size() > 0) begin
             tr = my_pecell_inout_transaction::type_id::create("tr");
-            tr.data = new[32];
+            tr.data = new[33];
             calculate(tr);
             tr_id++;
             tr.id = tr_id;
@@ -185,7 +187,7 @@ endfunction
 
 function void my_pecell_reference_model::write_inout(input my_pecell_inout_transaction tr);
     if (tr.work_mode == my_pecell_inout_transaction::WRITE) begin
-        weight[tr.waddr] = tr.data;
+        weight[tr.addr] = tr.data;
     end
     else if (tr.work_mode == my_pecell_inout_transaction::CALCULATE || tr.work_mode == my_pecell_inout_transaction::READ) begin
         in_vector_q.push_back(tr.data);
@@ -202,6 +204,7 @@ function void my_pecell_reference_model::calculate(ref my_pecell_inout_transacti
     in_vector_t vector = in_vector_q.pop_back();
     uvm_status_e status;
     uvm_reg_data_t value;
+    tr.data[0] = pe_id;
     foreach (weight[i]) begin
         foreach ( weight[,j] ) begin
             rdata_tmp += weight[i][j] * vector[j] 
@@ -211,22 +214,22 @@ function void my_pecell_reference_model::calculate(ref my_pecell_inout_transacti
             `uvm_fatal(get_type_name(), "read reg_reuse fail")
         end
         case (value[7:4])
-            4'd0: tr.data[i] = {rdata_tmp[0], rdata_tmp[20:14]};
-            4'd1: tr.data[i] = {rdata_tmp[0], rdata_tmp[19:13]};
-            4'd2: tr.data[i] = {rdata_tmp[0], rdata_tmp[18:12]};
-            4'd3: tr.data[i] = {rdata_tmp[0], rdata_tmp[17:11]};
-            4'd4: tr.data[i] = {rdata_tmp[0], rdata_tmp[16:10]};
-            4'd5: tr.data[i] = {rdata_tmp[0], rdata_tmp[15:9]};
-            4'd6: tr.data[i] = {rdata_tmp[0], rdata_tmp[14:8]};
-            4'd7: tr.data[i] = {rdata_tmp[0], rdata_tmp[13:7]};
-            4'd8: tr.data[i] = {rdata_tmp[0], rdata_tmp[12:6]};
-            4'd9: tr.data[i] = {rdata_tmp[0], rdata_tmp[11:5]};
-            4'd10: tr.data[i] = {rdata_tmp[0], rdata_tmp[10:4]};
-            4'd11: tr.data[i] = {rdata_tmp[0], rdata_tmp[9:3]};
-            4'd12: tr.data[i] = {rdata_tmp[0], rdata_tmp[8:2]};
-            4'd13: tr.data[i] = {rdata_tmp[0], rdata_tmp[7:1]};
-            4'd14: tr.data[i] = {rdata_tmp[0], rdata_tmp[6:0]};
-            default: tr.data[i] = {rdata_tmp[7:0]};
+            4'd0: tr.data[i+1] = {rdata_tmp[0], rdata_tmp[20:14]};
+            4'd1: tr.data[i+1] = {rdata_tmp[0], rdata_tmp[19:13]};
+            4'd2: tr.data[i+1] = {rdata_tmp[0], rdata_tmp[18:12]};
+            4'd3: tr.data[i+1] = {rdata_tmp[0], rdata_tmp[17:11]};
+            4'd4: tr.data[i+1] = {rdata_tmp[0], rdata_tmp[16:10]};
+            4'd5: tr.data[i+1] = {rdata_tmp[0], rdata_tmp[15:9]};
+            4'd6: tr.data[i+1] = {rdata_tmp[0], rdata_tmp[14:8]};
+            4'd7: tr.data[i+1] = {rdata_tmp[0], rdata_tmp[13:7]};
+            4'd8: tr.data[i+1] = {rdata_tmp[0], rdata_tmp[12:6]};
+            4'd9: tr.data[i+1] = {rdata_tmp[0], rdata_tmp[11:5]};
+            4'd10: tr.data[i+1] = {rdata_tmp[0], rdata_tmp[10:4]};
+            4'd11: tr.data[i+1] = {rdata_tmp[0], rdata_tmp[9:3]};
+            4'd12: tr.data[i+1] = {rdata_tmp[0], rdata_tmp[8:2]};
+            4'd13: tr.data[i+1] = {rdata_tmp[0], rdata_tmp[7:1]};
+            4'd14: tr.data[i+1] = {rdata_tmp[0], rdata_tmp[6:0]};
+            default: tr.data[i+1] = {rdata_tmp[7:0]};
         endcase
         
     end

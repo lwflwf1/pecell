@@ -77,6 +77,7 @@ function void my_pecell_apb_driver::build_phase(uvm_phase phase);
     if (!uvm_config_db#(virtual my_pecell_interface)::get(this, "", "vif", vif)) begin
         `uvm_fatal(get_type_name(), "cannot get interface")
     end
+    pe_id = tbcfg.pe_id;
 endfunction: build_phase
 
 

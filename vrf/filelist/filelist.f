@@ -1,4 +1,5 @@
 ./common/define.sv
+./tb/my_pecell_register_model.sv
 ./tb/my_pecell_transaction.sv
 ./tb/my_pecell_tb_config.sv
 ./tb/my_pecell_apb_transaction.sv
@@ -17,6 +18,8 @@
 ./tb/my_pecell_apb_agent.sv
 ./tb/my_pecell_subscriber.sv
 ./tb/my_pecell_scoreboard.sv
+./tb/my_pecell_adapter.sv
+./tb/my_pecell_predictor.sv
 ./tb/my_pecell_env.sv
 ./tb/my_pecell_base_test.sv
 ./tb/my_pecell_top.sv

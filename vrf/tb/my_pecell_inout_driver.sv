@@ -15,6 +15,7 @@ class my_pecell_inout_driver extends uvm_driver #(my_pecell_inout_transaction);
     //  Group: Config
     my_pecell_tb_config tbcfg;
     logic rdata_busy;
+    rdata_busy_mode_e rdata_busy_mode;
 
 
     //  Group: Variables
@@ -77,9 +78,7 @@ function void my_pecell_inout_driver::build_phase(uvm_phase phase);
     if (!uvm_config_db#(virtual my_pecell_interface)::get(this, "", "vif", vif)) begin
         `uvm_fatal(get_type_name(), "cannot get interface")
     end
-    if (!uvm_config_db#(rdata_busy_mode_e)::get(this, "", "rdata_busy_mode", rdata_busy_mode)) begin
-        `uvm_fatal(get_type_name(), "cannot get rdata_busy_mode")
-    end
+    rdata_busy_mode = tbcfg.rdata_busy_mode;
 endfunction: build_phase
 
 
@@ -175,7 +174,7 @@ task my_pecell_inout_driver::drive_one_pkt(input my_pecell_inout_transaction req
     vif.inout_drv_cb.cvalid <= 'b1;
     vif.inout_drv_cb.work_mode <= req.work_mode;
     if (req.work_mode == my_pecell_inout_transaction::WRITE) begin
-        vif.inout_drv_cb.waddr <= req.waddr;
+        vif.inout_drv_cb.waddr <= req.addr;
     end
     @(vif.inout_drv_cb);
     vif.inout_drv_cb.cvalid <= 'b0;

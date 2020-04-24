@@ -131,6 +131,7 @@ task my_pecell_inout_monitor::run_phase(uvm_phase phase);
     fork
         forever begin
             tr = my_pecell_inout_transaction::type_id::create("tr");
+            tr.data = new[33];
             collect_rdata_pkt(tr);
             tr_id++;
             tr.id = tr_id;
@@ -139,6 +140,7 @@ task my_pecell_inout_monitor::run_phase(uvm_phase phase);
         end
         forever begin
             tr = my_pecell_inout_transaction::type_id::create("tr");
+            tr.data = new[tbcfg.wdata_len];
             collect_wdata_pkt(tr);
             to_ref_mdl_ap.write(tr);
             to_sbr_ap.write(tr);
@@ -167,7 +169,7 @@ endfunction: extract_phase
 /*----------------------------------------------------------------------------*/
 task my_pecell_inout_monitor::collect_rdata_pkt(ref my_pecell_inout_transaction tr);
     @(vif.inout_mon_cb);
-    for (int i = 0; i < 32;)
+    for (int i = 0; i < 33;)
         if (vif.inout_mon_cb.rdata_valid == 'b1 && vif.inout_mon_cb.rdata_busy == 'b0) begin
             tr.data[i] == vif.inout_mon_cb.rdata;
             i++;
@@ -182,7 +184,7 @@ task my_pecell_inout_monitor::collect_wdata_pkt(ref my_pecell_inout_transaction 
     @(vif.inout_mon_cb);
     forever begin
         if (vir.inout_mon_cb.cvalid == 'b1) begin
-            tr.waddr = vif.inout_mon_cb.waddr;
+            tr.addr = vif.inout_mon_cb.waddr;
             tr.work_mode = vif.inout_mon_cb.work_mode
             break;
         end
@@ -191,7 +193,7 @@ task my_pecell_inout_monitor::collect_wdata_pkt(ref my_pecell_inout_transaction 
         end
     end
     if (tr.work_mode != my_pecell_inout_transaction::IDLE) begin
-        for (int i = 0; i < 35;) begin
+        for (int i = 0; i < tbcfg.wdata_len - 1;) begin
             if (vif.inout_mon_cb.wdata_valid == 'b1 && vif.inout_mon_cb.wdata_busy == 'b0) begin
                 tr.data[i] = vif.inout_mon_cb.wdata;
                 i++;

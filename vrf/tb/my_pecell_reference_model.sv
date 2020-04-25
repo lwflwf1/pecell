@@ -13,17 +13,17 @@ class my_pecell_reference_model extends uvm_component;
     `uvm_component_utils(my_pecell_reference_model)
     `uvm_analysis_imp_decl(_apb)
     `uvm_analysis_imp_decl(_inout)
-    typedef signed logic [`WID_BUS:0] in_vector_t[35:0];
+    typedef logic signed [`WID_BUS-1:0] in_vector_t[35:0];
     
 
     //  Group: Config
     my_pecell_tb_config tbcfg;
-    signed logic [`WID_BUS:0] weight[31:0][35:0]
+    logic signed [`WID_BUS-1:0] weight[31:0][35:0];
     in_vector_t in_vector_q[$];
     bit [7:0]regs[4:0];
-    signed logic [`WID_BUS-1:0] rdata[32:0];
+    logic signed [`WID_BUS-1:0] rdata[32:0];
     int rdata_tmp;
-    unsigned int tr_id = 0;
+    int unsigned tr_id = 0;
     virtual my_pecell_interface vif;
     my_pecell_register_model m_regmdl;
     logic [6:0] pe_id;
@@ -42,7 +42,7 @@ class my_pecell_reference_model extends uvm_component;
     //  Group: Functions
     extern virtual function void write_apb(input my_pecell_apb_transaction tr);
     extern virtual function void write_inout(input my_pecell_inout_transaction tr);
-    extern virtual function void calculate(ref my_pecell_inout_transaction tr);
+    extern virtual task calculate(ref my_pecell_inout_transaction tr);
 
     
     //  Constructor: new
@@ -99,6 +99,9 @@ function void my_pecell_reference_model::build_phase(uvm_phase phase);
     if (!uvm_config_db#(virtual my_pecell_interface)::get(this, "", "vif", vif)) begin
         `uvm_fatal(get_type_name(), "cannot get interface")
     end
+    if (!uvm_config_db#(my_pecell_register_model)::get(this, "", "regmdl", m_regmdl)) begin
+        `uvm_fatal(get_type_name(), "can not get m_regmdl")
+    end
     pe_id = tbcfg.pe_id;
 
     // create ports
@@ -111,9 +114,6 @@ endfunction: build_phase
 
 function void my_pecell_reference_model::connect_phase(uvm_phase phase);
     super.connect_phase(phase);
-    if (m_regmdl == null) begin
-        `uvm_fatal(get_type_name(), "can not get m_regmdl")
-    end
 endfunction: connect_phase
 
 
@@ -186,10 +186,12 @@ endfunction
 
 
 function void my_pecell_reference_model::write_inout(input my_pecell_inout_transaction tr);
-    if (tr.work_mode == my_pecell_inout_transaction::WRITE) begin
-        weight[tr.addr] = tr.data;
+    if (tr.work_mode == WRITE) begin
+        foreach ( tr.data[i] ) begin
+            weight[tr.addr][i] = tr.data[i];
+        end
     end
-    else if (tr.work_mode == my_pecell_inout_transaction::CALCULATE || tr.work_mode == my_pecell_inout_transaction::READ) begin
+    else if (tr.work_mode == CALCULATE || tr.work_mode == READ) begin
         in_vector_q.push_back(tr.data);
     end
 endfunction
@@ -200,14 +202,14 @@ endfunction
 /*----------------------------------------------------------------------------*/
 /*  Other Class Functions and Tasks                                           */
 /*----------------------------------------------------------------------------*/
-function void my_pecell_reference_model::calculate(ref my_pecell_inout_transaction tr);
+task my_pecell_reference_model::calculate(ref my_pecell_inout_transaction tr);
     in_vector_t vector = in_vector_q.pop_back();
     uvm_status_e status;
     uvm_reg_data_t value;
     tr.data[0] = pe_id;
     foreach (weight[i]) begin
         foreach ( weight[,j] ) begin
-            rdata_tmp += weight[i][j] * vector[j] 
+            rdata_tmp += weight[i][j] * vector[j]; 
         end
         m_regmdl.reg_reuse.read(status, value, UVM_FRONTDOOR);
         if (status != UVM_IS_OK) begin
@@ -233,5 +235,5 @@ function void my_pecell_reference_model::calculate(ref my_pecell_inout_transacti
         endcase
         
     end
-endfunction: calculate
+endtask: calculate
 

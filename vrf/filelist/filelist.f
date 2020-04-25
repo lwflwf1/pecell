@@ -19,7 +19,6 @@
 ./tb/my_pecell_subscriber.sv
 ./tb/my_pecell_scoreboard.sv
 ./tb/my_pecell_adapter.sv
-./tb/my_pecell_predictor.sv
 ./tb/my_pecell_env.sv
 ./tb/my_pecell_base_test.sv
 ./tb/my_pecell_top.sv

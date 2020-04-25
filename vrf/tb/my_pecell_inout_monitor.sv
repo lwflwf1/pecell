@@ -14,7 +14,7 @@ class my_pecell_inout_monitor extends uvm_monitor;
 
     //  Group: Config
     my_pecell_tb_config tbcfg;
-    unsigned int tr_id = 0;
+    int unsigned tr_id = 0;
 
     //  Group: Variables
     virtual my_pecell_interface vif;
@@ -169,9 +169,9 @@ endfunction: extract_phase
 /*----------------------------------------------------------------------------*/
 task my_pecell_inout_monitor::collect_rdata_pkt(ref my_pecell_inout_transaction tr);
     @(vif.inout_mon_cb);
-    for (int i = 0; i < 33;)
+    for (int i = 0; i < 33;) begin
         if (vif.inout_mon_cb.rdata_valid == 'b1 && vif.inout_mon_cb.rdata_busy == 'b0) begin
-            tr.data[i] == vif.inout_mon_cb.rdata;
+            tr.data[i] = vif.inout_mon_cb.rdata;
             i++;
         end
         else begin
@@ -183,16 +183,16 @@ endtask: collect_rdata_pkt
 task my_pecell_inout_monitor::collect_wdata_pkt(ref my_pecell_inout_transaction tr);
     @(vif.inout_mon_cb);
     forever begin
-        if (vir.inout_mon_cb.cvalid == 'b1) begin
+        if (vif.inout_mon_cb.cvalid == 'b1) begin
             tr.addr = vif.inout_mon_cb.waddr;
-            tr.work_mode = vif.inout_mon_cb.work_mode
+            tr.work_mode = work_mode_e'(vif.inout_mon_cb.work_mode);
             break;
         end
         else begin
             @(vif.inout_mon_cb);
         end
     end
-    if (tr.work_mode != my_pecell_inout_transaction::IDLE) begin
+    if (tr.work_mode != IDLE) begin
         for (int i = 0; i < tbcfg.wdata_len - 1;) begin
             if (vif.inout_mon_cb.wdata_valid == 'b1 && vif.inout_mon_cb.wdata_busy == 'b0) begin
                 tr.data[i] = vif.inout_mon_cb.wdata;

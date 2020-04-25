@@ -41,3 +41,5 @@
 `define DLY 1
 `endif
 
+typedef enum logic {LOW, RAND} rdata_busy_mode_e;
+typedef enum logic[1:0] {IDLE, CALCULATE, READ, WRITE} work_mode_e;

@@ -119,11 +119,10 @@ function void my_pecell_env::connect_phase(uvm_phase phase);
     m_ref_mdl.to_scb_ap.connect(m_scb.imp_ref);
 
     
-    m_regmdl.map.set_sequencer(m_pecell_apb_agt.sqr, m_adapter);
+    m_regmdl.map.set_sequencer(m_pecell_apb_agt.m_sqr, m_adapter);
     m_predictor.map = m_regmdl.map;
     m_predictor.adapter = m_adapter;
-    m_pecell_apb_agt.mon.ap.connect(m_predictor.bus_in);
-    m_ref_mdl.m_regmdl = m_regmdl;
+    m_pecell_apb_agt.m_mon.ap.connect(m_predictor.bus_in);
 
 endfunction: connect_phase
 

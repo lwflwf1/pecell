@@ -11,7 +11,7 @@
 //
 class my_pecell_inout_driver extends uvm_driver #(my_pecell_inout_transaction);
     `uvm_component_utils(my_pecell_inout_driver)
-    typedef enum logic {LOW, RANDOM} rdata_busy_mode_e;
+
     //  Group: Config
     my_pecell_tb_config tbcfg;
     logic rdata_busy;
@@ -24,7 +24,6 @@ class my_pecell_inout_driver extends uvm_driver #(my_pecell_inout_transaction);
     //  Group: Functions
     extern virtual task drive_one_pkt(input my_pecell_inout_transaction req);
     extern virtual task drive_idle();
-    extern virtual task drive_rdata_busy();
 
     //  Constructor: new
     function new(string name = "my_pecell_inout_driver", uvm_component parent);
@@ -131,7 +130,7 @@ task my_pecell_inout_driver::run_phase(uvm_phase phase);
             end
         end
         begin
-            if (rdata_busy_mode == RANDOM) begin
+            if (rdata_busy_mode == RAND) begin
                 forever begin
                     @(vif.inout_drv_cb);
                     std::randomize(rdata_busy);
@@ -164,21 +163,17 @@ task my_pecell_inout_driver::drive_one_pkt(input my_pecell_inout_transaction req
     vif.inout_drv_cb.cs_n <= 'b0;
     repeat(req.cvalid_after_csn) @(vif.inout_drv_cb);
     forever begin
-        if (vif.inout_drv_cb.pe_busy == 'b0) begin
-            break;
-        end
-        else begin
-            @(vif.inout_drv_cb);
-        end
+        if (vif.inout_drv_cb.pe_busy == 'b0) break;
+        else @(vif.inout_drv_cb);
     end
     vif.inout_drv_cb.cvalid <= 'b1;
     vif.inout_drv_cb.work_mode <= req.work_mode;
-    if (req.work_mode == my_pecell_inout_transaction::WRITE) begin
+    if (req.work_mode == WRITE) begin
         vif.inout_drv_cb.waddr <= req.addr;
     end
     @(vif.inout_drv_cb);
     vif.inout_drv_cb.cvalid <= 'b0;
-    foreach(wdata[i]) begin
+    foreach(req.data[i]) begin
         repeat(req.wdata_interval_cycle[i]) @(vif.inout_drv_cb);
         vif.inout_drv_cb.wdata_valid <= 'b1;
         vif.inout_drv_cb.wdata <= req.data[i];
@@ -209,8 +204,4 @@ task my_pecell_inout_driver::drive_idle();
     vif.inout_drv_cb.cs_n <= 'b1;
     vif.inout_drv_cb.cvalid <= 'b0;
 endtask: drive_idle
-
-
-task my_pecell_inout_driver::drive_rdata_busy();
-endtask: namedrive_rada::
 

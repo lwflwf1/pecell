@@ -14,13 +14,12 @@ class my_pecell_scoreboard extends uvm_scoreboard;
     `uvm_analysis_imp_decl(_apb)
     `uvm_analysis_imp_decl(_inout)
     `uvm_analysis_imp_decl(_ref)
-    typedef signed logic [`WID_BUS-1:0] vector[31:0]
     
 
     //  Group: Config
     my_pecell_tb_config tbcfg;
-    vector act_q[$];
-    vector exp_q[$];
+    my_pecell_inout_transaction act_q[$];
+    my_pecell_inout_transaction exp_q[$];
     virtual my_pecell_interface vif;
     
 
@@ -139,9 +138,7 @@ endtask: shutdown_phase
 task my_pecell_scoreboard::run_phase(uvm_phase phase);
     forever begin
         if (exp_q.size() > 0 && act_q.size() > 0) begin
-            act = act_q.pop_back();
-            exp = exp_q.pop_back();
-            compare(act, exp);
+            compare(act_q.pop_back(), exp_q.pop_back());
         end
         else begin
             @(posedge vif.clk);
@@ -156,6 +153,16 @@ endtask: run_phase
 /*----------------------------------------------------------------------------*/
 function void my_pecell_scoreboard::report_phase(uvm_phase phase);
     super.report_phase(phase);
+    if (exp_q.size() > 0 && act_q.size() > 0) begin
+        compare(act_q.pop_back(), exp_q.pop_back());
+    end
+    if (exp_q.size() == 0 && act_q.size() == 0) begin
+        `uvm_info(get_type_name(), "compare done", UVM_MEDIUM)
+    end
+    else begin
+        `uvm_error(get_type_name(), $sformatf("expect transaction number and actual number mismatch!\nexq_q.size = %d\nact_q.size = %d\n", exp_q.size(), act_q.size()))
+    end
+    
 endfunction: report_phase
 
 
@@ -198,4 +205,4 @@ function void my_pecell_scoreboard::compare(input my_pecell_inout_transaction ac
         end
     end
     `uvm_info(get_type_name(), "compare success", UVM_MEDIUM)
-endfunction: name
+endfunction: compare

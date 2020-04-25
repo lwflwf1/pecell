@@ -13,7 +13,6 @@ class my_pecell_tb_config extends uvm_object;
     typedef my_pecell_tb_config this_type_t;
     /*   Be careful to use `uvm_field_* marco     */
     `uvm_object_utils(my_pecell_tb_config)
-    typedef enum logic {LOW, RAND} rdata_busy_mode_e;
 
     //  Group: Variables
     uvm_active_passive_enum apb_agt_is_active;

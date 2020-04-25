@@ -80,7 +80,7 @@ function void my_pecell_base_test::build_phase(uvm_phase phase);
     // set config
     uvm_config_db#(virtual my_pecell_interface)::set(this, "m_env.*", "vif", my_pecell_top.m_if);
     uvm_config_db#(my_pecell_tb_config)::set(this, "m_env*", "tbcfg", tbcfg);
-    uvm_config_db#(my_pecell_register_model)::set(this, "m_env", "regmdl", m_regmdl);
+    uvm_config_db#(my_pecell_register_model)::set(this, "m_env*", "regmdl", m_regmdl);
     // set timeout
     `ifndef PRESURE_TEST
     uvm_top.set_timeout(`TIMEOUT, 0);

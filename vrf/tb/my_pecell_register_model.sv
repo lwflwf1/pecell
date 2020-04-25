@@ -75,9 +75,9 @@ class register_reuse extends uvm_reg;
         output_config = uvm_reg_field::type_id::create("output_config");
         work_mode = uvm_reg_field::type_id::create("work_mode");
         rram_set = uvm_reg_field::type_id::create("rram_set");
-        output.configure(this, 4, 4, "RW", 0, 4'h6, 1, 1, 0);
-        work_mode.configure(this, 2, 2, "RW", 0, 2'h0, 1, 1, 0');
-        rram_set.configure(this, 2, 0, "RW", 0, 2'h1, 1, 1, 0');
+        output_config.configure(this, 4, 4, "RW", 0, 4'h6, 1, 1, 0);
+        work_mode.configure(this, 2, 2, "RW", 0, 2'h0, 1, 1, 0);
+        rram_set.configure(this, 2, 0, "RW", 0, 2'h1, 1, 1, 0);
     endfunction
 
     
@@ -130,11 +130,11 @@ class my_pecell_register_model extends uvm_reg_block;
         map.add_reg(reg_reuse, 4'h4, "RW");
         lock_model();
         add_hdl_path("my_pecell_top.pe_cell_dut.u_pe_cell_reg_inf");
-        reg_set_cycle0.add_hdl_path_slice("U_REG_RW_REG_SET_CYCLE0.mem");
-        reg_set_cycle1.add_hdl_path_slice("U_REG_RW_REG_SET_CYCLE1.mem");
-        reg_set_cycle2.add_hdl_path_slice("U_REG_RW_REG_SET_CYCLE2.mem");
-        reg_set_cycle3.add_hdl_path_slice("U_REG_RW_REG_SET_CYCLE3.mem");
-        reg_reuse.add_hdl_path_slice("U_REG_RW_REG_REUSE.mem");
+        reg_set_cycle0.add_hdl_path_slice("U_REG_RW_REG_SET_CYCLE0.mem", 0, 8);
+        reg_set_cycle1.add_hdl_path_slice("U_REG_RW_REG_SET_CYCLE1.mem", 0, 8);
+        reg_set_cycle2.add_hdl_path_slice("U_REG_RW_REG_SET_CYCLE2.mem", 0, 8);
+        reg_set_cycle3.add_hdl_path_slice("U_REG_RW_REG_SET_CYCLE3.mem", 0, 8);
+        reg_reuse.add_hdl_path_slice("U_REG_RW_REG_REUSE.mem", 0, 8);
     endfunction
 
     

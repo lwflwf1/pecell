@@ -34,7 +34,7 @@ class my_pecell_adapter extends uvm_reg_adapter;
 
     virtual function void bus2reg(uvm_sequence_item bus_item, ref uvm_reg_bus_op rw);
         my_pecell_apb_transaction tr;
-        if ($cast(tr, bus_item)) begin
+        if (!$cast(tr, bus_item)) begin
             `uvm_fatal(get_type_name(), "type of bus_item is not correct")
         end
         rw.kind = (tr.kind == my_pecell_apb_transaction::WRITE) ? UVM_WRITE : UVM_READ;

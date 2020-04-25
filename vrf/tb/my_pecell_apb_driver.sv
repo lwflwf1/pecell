@@ -159,9 +159,9 @@ task my_pecell_apb_driver::drive_one_pkt(input my_pecell_apb_transaction req);
     else begin
         vif.apb_drv_cb.pwrite <= 'b0;
     end
-    @(posedge vif.apb_drv_cb);
+    @(vif.apb_drv_cb);
     vif.apb_drv_cb.penable <= 'b1;
-    @(posedge vif.apb_drv_cb);
+    @(vif.apb_drv_cb);
     forever begin
         if (vif.apb_drv_cb.pready == 'b1) begin
             break;
@@ -176,5 +176,5 @@ endtask: drive_one_pkt
 task my_pecell_apb_driver::drive_idle();
     vif.apb_drv_cb.psel <= 'b0;
     vif.apb_drv_cb.penable <= 'b0;
-    @(posedge vif.apb_drv_cb);
+    @(vif.apb_drv_cb);
 endtask: drive_idle

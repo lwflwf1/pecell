@@ -131,10 +131,10 @@ task my_pecell_apb_monitor::run_phase(uvm_phase phase);
     wait(vif.rst_n == 1);
     fork
         forever begin
-            collect_wdata(tr);
+            collect_wdata();
         end
         forever begin
-            collect_rdata(tr);
+            collect_rdata();
         end
     join
 endtask: run_phase
@@ -162,7 +162,7 @@ task my_pecell_apb_monitor::collect_wdata();
     @(vif.apb_mon_cb);
     if (vif.apb_mon_cb.pwrite == 'b1 && vif.apb_mon_cb.psel == 'b1 && vif.apb_mon_cb.penable == 'b1 && vif.apb_mon_cb.pready == 'b1) begin
         tr = my_pecell_apb_transaction::type_id::create("tr");
-        tr.addr = vif.apb_mon_cb.pwaddr;
+        tr.addr = vif.apb_mon_cb.paddr;
         tr.data = vif.apb_mon_cb.pwdata;
         tr.kind = my_pecell_apb_transaction::WRITE;
         ap.write(tr);
@@ -176,10 +176,10 @@ task my_pecell_apb_monitor::collect_rdata();
     if (vif.apb_mon_cb.psel == 'b1 && vif.apb_mon_cb.penable == 'b1 && vif.apb_mon_cb.pready == 'b1 && vif.apb_mon_cb.pwrite == 'b0) begin
         tr = my_pecell_apb_transaction::type_id::create("tr");
         tr.data = vif.apb_mon_cb.prdata;
-        tr.addr = vif.apb_mon_cb.praddr;
+        tr.addr = vif.apb_mon_cb.paddr;
         tr.kind = my_pecell_apb_transaction::READ;
         ap.write(tr);
     end
-endtask: name
+endtask: collect_rdata
 
 

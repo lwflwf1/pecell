@@ -62,7 +62,6 @@ class my_pecell_inout_sequence extends uvm_sequence;
 
     //  Group: Variables
     my_pecell_inout_transaction tr;
-    int input_data_num = 0;
     
 
     //  Group: Functions
@@ -98,7 +97,6 @@ task my_pecell_inout_sequence::body();
     tr.data[0] = 1;
     finish_item(tr);
     `uvm_info(get_type_name(), "send one input vector to driver", UVM_MEDIUM)
-    input_data_num++;
 endtask: body
 
 
@@ -163,11 +161,9 @@ endtask: pre_start
 
 // Task: post_start
 task my_pecell_virtual_sequence::post_start();
-    repeat(m_inout_seq.input_data_num) begin
-        wait(p_sequencer.vif.inout_mon_cb.rdata_last == 'b1);
-        @(p_sequencer.vif.inout_mon_cb);
-        @(p_sequencer.vif.inout_mon_cb);
-    end
+    wait(p_sequencer.vif.inout_mon_cb.rdata_last == 'b1);
+    @(p_sequencer.vif.inout_mon_cb);
+    @(p_sequencer.vif.inout_mon_cb);
     if (starting_phase != null) begin
         starting_phase.drop_objection(this);
     end

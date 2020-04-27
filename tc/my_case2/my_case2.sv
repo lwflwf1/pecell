@@ -62,7 +62,7 @@ class my_pecell_inout_sequence extends uvm_sequence;
 
     //  Group: Variables
     my_pecell_inout_transaction tr;
-    int input_data_num = 0;
+    int input_data_num = 36;
     
 
     //  Group: Functions
@@ -82,24 +82,23 @@ task my_pecell_inout_sequence::body();
         tr = my_pecell_inout_transaction::type_id::create("tr");
         start_item(tr);
         assert(tr.randomize() with {
-            foreach(data[j]) data[j] == 0;
+            foreach(data[j]) data[j] == j;
             addr == local::i;
             work_mode == WRITE;
         });
         finish_item(tr);
         `uvm_info(get_type_name(), "send one weight vector to driver", UVM_MEDIUM)
     end
-    for(int i = 0; i < 10; i++) begin
+    for(int i = 0; i < input_data_num; i++) begin
         tr = my_pecell_inout_transaction::type_id::create("tr");
         start_item(tr);
         tr.randomize() with {
             foreach(data[j]) data[j] == 0;
             work_mode == CALCULATE;
         };
-        tr.data[0] = 1;
+        tr.data[i] = 1;
         finish_item(tr);
         `uvm_info(get_type_name(), "send one input vector to driver", UVM_MEDIUM)
-        input_data_num++;
     end
 endtask: body
 
@@ -165,11 +164,9 @@ endtask: pre_start
 
 // Task: post_start
 task my_pecell_virtual_sequence::post_start();
-    repeat(m_inout_seq.input_data_num) begin
-        wait(p_sequencer.vif.inout_mon_cb.rdata_last == 'b1);
-        @(p_sequencer.vif.inout_mon_cb);
-        @(p_sequencer.vif.inout_mon_cb);
-    end
+    wait(p_sequencer.vif.inout_mon_cb.rdata_last == 'b1);
+    @(p_sequencer.vif.inout_mon_cb);
+    @(p_sequencer.vif.inout_mon_cb);
     if (starting_phase != null) begin
         starting_phase.drop_objection(this);
     end

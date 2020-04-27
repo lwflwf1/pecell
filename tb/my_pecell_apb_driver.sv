@@ -165,14 +165,6 @@ task my_pecell_apb_driver::drive_one_pkt(ref my_pecell_apb_transaction req);
     if (req.kind == my_pecell_apb_transaction::READ) begin
         req.data = vif.apb_drv_cb.prdata;
     end
-    // forever begin
-    //     if (vif.apb_drv_cb.pready == 'b1) begin
-    //         break;
-    //     end
-    //     else begin
-    //         @(vif.apb_drv_cb);
-    //     end
-    // end
 endtask: drive_one_pkt
 
 

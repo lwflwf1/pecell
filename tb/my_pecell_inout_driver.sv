@@ -121,8 +121,8 @@ task my_pecell_inout_driver::run_phase(uvm_phase phase);
         forever begin
             seq_item_port.try_next_item(req);
             if (req != null) begin
-                seq_item_port.item_done();
                 drive_one_pkt(req);
+                seq_item_port.item_done();
             end
             else begin
                 // insert an idle cycle
@@ -182,14 +182,6 @@ task my_pecell_inout_driver::drive_one_pkt(input my_pecell_inout_transaction req
         end
         wait(vif.inout_drv_cb.wdata_busy == 'b0);
         @(vif.inout_drv_cb);
-        // forever begin
-        //     if (vif.inout_drv_cb.wdata_busy == 'b0) begin
-        //         break;
-        //     end
-        //     else begin
-        //         @(vif.inout_drv_cb);
-        //     end
-        // end
         vif.inout_drv_cb.wdata_valid <= 'b0;
         vif.inout_drv_cb.wdata_last <= 'b0;
     end

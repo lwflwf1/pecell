@@ -26,8 +26,8 @@ class my_pecell_inout_monitor extends uvm_monitor;
     
 
     //  Group: Functions
-    extern virtual virtual task collect_rdata_pkt(ref my_pecell_inout_transaction tr);
-    extern virtual virtual task collect_wdata_pkt(ref my_pecell_inout_transaction tr);
+    extern virtual virtual task collect_rdata_pkt(inout my_pecell_inout_transaction tr);
+    extern virtual virtual task collect_wdata_pkt(inout my_pecell_inout_transaction tr);
 
     //  Constructor: new
     function new(string name = "my_pecell_inout_monitor", uvm_component parent);
@@ -135,7 +135,7 @@ task my_pecell_inout_monitor::run_phase(uvm_phase phase);
             collect_rdata_pkt(tr);
             tr_id++;
             tr.id = tr_id;
-            to_sbr_ap.write(tr);
+            to_scb_ap.write(tr);
             `uvm_info({get_type_name(), ": rdata"}, "collect one packet", UVM_MEDIUM)
         end
         forever begin
@@ -167,20 +167,18 @@ endfunction: extract_phase
 /*----------------------------------------------------------------------------*/
 /*  Other Class Functions and Tasks                                           */ 
 /*----------------------------------------------------------------------------*/
-task my_pecell_inout_monitor::collect_rdata_pkt(ref my_pecell_inout_transaction tr);
+task my_pecell_inout_monitor::collect_rdata_pkt(inout my_pecell_inout_transaction tr);
     @(vif.inout_mon_cb);
     for (int i = 0; i < 33;) begin
         if (vif.inout_mon_cb.rdata_valid == 'b1 && vif.inout_mon_cb.rdata_busy == 'b0) begin
             tr.data[i] = vif.inout_mon_cb.rdata;
             i++;
         end
-        else begin
-            @(vif.inout_mon_cb);
-        end
+        @(vif.inout_mon_cb);
     end
 endtask: collect_rdata_pkt
 
-task my_pecell_inout_monitor::collect_wdata_pkt(ref my_pecell_inout_transaction tr);
+task my_pecell_inout_monitor::collect_wdata_pkt(inout my_pecell_inout_transaction tr);
     @(vif.inout_mon_cb);
     forever begin
         if (vif.inout_mon_cb.cvalid == 'b1) begin
@@ -193,14 +191,12 @@ task my_pecell_inout_monitor::collect_wdata_pkt(ref my_pecell_inout_transaction 
         end
     end
     if (tr.work_mode != IDLE) begin
-        for (int i = 0; i < tbcfg.wdata_len - 1;) begin
+        for (int i = 0; i < tbcfg.wdata_len;) begin
             if (vif.inout_mon_cb.wdata_valid == 'b1 && vif.inout_mon_cb.wdata_busy == 'b0) begin
                 tr.data[i] = vif.inout_mon_cb.wdata;
                 i++;
             end
-            else begin
-                @(vif.inout_mon_cb);
-            end
+            @(vif.inout_mon_cb);
         end
     end
 endtask

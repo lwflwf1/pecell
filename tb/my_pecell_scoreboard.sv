@@ -153,14 +153,14 @@ endtask: run_phase
 /*----------------------------------------------------------------------------*/
 function void my_pecell_scoreboard::report_phase(uvm_phase phase);
     super.report_phase(phase);
-    if (exp_q.size() > 0 && act_q.size() > 0) begin
+    for(;exp_q.size() > 0 && act_q.size() > 0;) begin
         compare(act_q.pop_back(), exp_q.pop_back());
     end
     if (exp_q.size() == 0 && act_q.size() == 0) begin
         `uvm_info(get_type_name(), "compare done", UVM_MEDIUM)
     end
     else begin
-        `uvm_error(get_type_name(), $sformatf("expect transaction number and actual number mismatch!\nexq_q.size = %d\nact_q.size = %d\n", exp_q.size(), act_q.size()))
+        `uvm_error(get_type_name(), $sformatf("expect transaction number and actual number mismatch!\nexq_q.size = %0d\nact_q.size = %0d\n", exp_q.size(), act_q.size()))
     end
     
 endfunction: report_phase
@@ -196,11 +196,11 @@ endfunction
 /*----------------------------------------------------------------------------*/
 function void my_pecell_scoreboard::compare(input my_pecell_inout_transaction act, input my_pecell_inout_transaction exp);
     if (act.id != exp.id) begin
-        `uvm_fatal(get_type_name(), $sformatf("transaction id mismatch!!!\nact.id = %d; exp_id = %d\n", act.id, exp.id))
+        `uvm_fatal(get_type_name(), $sformatf("transaction id mismatch!!!\nact.id = %0d; exp_id = %0d\n", act.id, exp.id))
     end
     foreach ( act.data[i] ) begin
         if (act.data[i] != exp.data[i]) begin
-            `uvm_error(get_type_name(), $sformatf("[%d]: compare fail!\nact: %p\nexp: %p\n", act.id, act.data, exp.data))
+            `uvm_error(get_type_name(), $sformatf("[%0d]: compare fail!\nact: %p\nexp: %p\n", act.id, act.data, exp.data))
             return;
         end
     end

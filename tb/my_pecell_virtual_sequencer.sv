@@ -19,6 +19,7 @@ class my_pecell_virtual_sequencer extends uvm_sequencer;
     //  Group: Variables
     my_pecell_apb_sequencer m_pecell_apb_sqr;
     my_pecell_inout_sequencer m_pecell_inout_sqr;
+    virtual my_pecell_interface vif;
     
 
     //  Group: Functions
@@ -72,6 +73,9 @@ function void my_pecell_virtual_sequencer::build_phase(uvm_phase phase);
     // super.build_phase(phase);
     if (!uvm_config_db#(my_pecell_tb_config)::get(this, "", "tbcfg", tbcfg)) begin
         `uvm_fatal(get_type_name(), "cannot get tbcfg")
+    end
+    if(!uvm_config_db#(virtual my_pecell_interface)::get(this, "", "vif", vif)) begin
+        `uvm_fatal(get_type_name(), "cannot get interface")
     end
 endfunction: build_phase
 

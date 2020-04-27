@@ -1,9 +1,9 @@
 ///////////////////////////////////////////////
-// file name   : my_case1.sv
-// create time : 2020-04-21
+// file name   : my_case3.sv
+// create time : 2020-4-27
 // author      : Gong Yingfan
 // version     : v1.0
-// cescript    : my_case1
+// cescript    : my_case3
 // log         : no
 ///////////////////////////////////////////////
 
@@ -89,16 +89,18 @@ task my_pecell_inout_sequence::body();
         finish_item(tr);
         `uvm_info(get_type_name(), "send one weight vector to driver", UVM_MEDIUM)
     end
-    tr = my_pecell_inout_transaction::type_id::create("tr");
-    start_item(tr);
-    tr.randomize() with {
-        foreach(data[j]) data[j] == 0;
-        work_mode == CALCULATE;
-    };
-    tr.data[0] = 1;
-    finish_item(tr);
-    `uvm_info(get_type_name(), "send one input vector to driver", UVM_MEDIUM)
-    input_data_num++;
+    for(int i = 0; i < 10; i++) begin
+        tr = my_pecell_inout_transaction::type_id::create("tr");
+        start_item(tr);
+        tr.randomize() with {
+            foreach(data[j]) data[j] == 0;
+            work_mode == CALCULATE;
+        };
+        tr.data[0] = 1;
+        finish_item(tr);
+        `uvm_info(get_type_name(), "send one input vector to driver", UVM_MEDIUM)
+        input_data_num++;
+    end
 endtask: body
 
 
@@ -181,10 +183,10 @@ endtask: post_start
 
 
 
-//  Class: my_case1
+//  Class: my_case3
 //
-class my_case1 extends my_pecell_base_test;
-    `uvm_component_utils(my_case1)
+class my_case3 extends my_pecell_base_test;
+    `uvm_component_utils(my_case3)
 
     //  Group: Config
     
@@ -196,7 +198,7 @@ class my_case1 extends my_pecell_base_test;
     //  Group: Functions
 
     //  Constructor: new
-    function new(string name = "my_case1", uvm_component parent);
+    function new(string name = "my_case3", uvm_component parent);
         super.new(name, parent);
     endfunction: new
 
@@ -233,13 +235,13 @@ class my_case1 extends my_pecell_base_test;
     //  Function: report_phase
     extern virtual function void report_phase(uvm_phase phase);
     
-endclass: my_case1
+endclass: my_case3
 
 
 /*----------------------------------------------------------------------------*/
 /*  UVM Build Phases                                                          */
 /*----------------------------------------------------------------------------*/
-function void my_case1::build_phase(uvm_phase phase);
+function void my_case3::build_phase(uvm_phase phase);
     /*  note: Do not call super.build_phase() from any class that is extended from an UVM base class!  */
     /*  For more information see UVM Cookbook v1800.2 p.503  */
 
@@ -253,7 +255,7 @@ function void my_case1::build_phase(uvm_phase phase);
 endfunction: build_phase
 
 
-function void my_case1::connect_phase(uvm_phase phase);
+function void my_case3::connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     // override report verbosity level, default is UVM_HIGH
     // m_env.set_report_verbosity_level_hier(UVM_HIGH);
@@ -264,7 +266,7 @@ function void my_case1::connect_phase(uvm_phase phase);
 endfunction: connect_phase
 
 
-function void my_case1::end_of_elaboration_phase(uvm_phase phase);
+function void my_case3::end_of_elaboration_phase(uvm_phase phase);
     super.end_of_elaboration_phase(phase);
 endfunction: end_of_elaboration_phase
 
@@ -272,32 +274,32 @@ endfunction: end_of_elaboration_phase
 /*----------------------------------------------------------------------------*/
 /*  UVM Run Phases                                                            */
 /*----------------------------------------------------------------------------*/
-function void my_case1::start_of_simulation_phase(uvm_phase phase);
+function void my_case3::start_of_simulation_phase(uvm_phase phase);
     super.start_of_simulation_phase(phase);
 endfunction: start_of_simulation_phase
 
 
-task my_case1::reset_phase(uvm_phase phase);
+task my_case3::reset_phase(uvm_phase phase);
     super.reset_phase(phase);
 endtask: reset_phase
 
 
-task my_case1::configure_phase(uvm_phase phase);
+task my_case3::configure_phase(uvm_phase phase);
     super.configure_phase(phase);
 endtask: configure_phase
 
 
-task my_case1::main_phase(uvm_phase phase);
+task my_case3::main_phase(uvm_phase phase);
     super.main_phase(phase);
 endtask: main_phase
 
 
-task my_case1::shutdown_phase(uvm_phase phase);
+task my_case3::shutdown_phase(uvm_phase phase);
     super.shutdown_phase(phase);
 endtask: shutdown_phase
 
 
-task my_case1::run_phase(uvm_phase phase);
+task my_case3::run_phase(uvm_phase phase);
     super.run_phase(phase);
     // start vseq on vsqr
     m_vseq.starting_phase = phase;
@@ -308,12 +310,12 @@ endtask: run_phase
 /*----------------------------------------------------------------------------*/
 /*  UVM Cleanup Phases                                                        */
 /*----------------------------------------------------------------------------*/
-function void my_case1::report_phase(uvm_phase phase);
+function void my_case3::report_phase(uvm_phase phase);
     super.report_phase(phase);
 endfunction: report_phase
 
 
-function void my_case1::extract_phase(uvm_phase phase);
+function void my_case3::extract_phase(uvm_phase phase);
     super.extract_phase(phase);
 endfunction: extract_phase
 

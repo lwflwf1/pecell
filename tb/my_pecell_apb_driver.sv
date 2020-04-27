@@ -21,13 +21,12 @@ class my_pecell_apb_driver extends uvm_driver #(my_pecell_apb_transaction);
     virtual my_pecell_interface vif;
 
     //  Group: Functions
-    extern virtual task drive_one_pkt(input my_pecell_apb_transaction req);
+    extern virtual task drive_one_pkt(ref my_pecell_apb_transaction req);
     extern virtual task drive_idle();
 
     //  Constructor: new
     function new(string name = "my_pecell_apb_driver", uvm_component parent);
         super.new(name, parent);
-        std::randomize(pe_id);
     endfunction: new
 
     /*---  UVM Build Phases            ---*/
@@ -122,8 +121,8 @@ task my_pecell_apb_driver::run_phase(uvm_phase phase);
     forever begin
         seq_item_port.try_next_item(req);
         if (req != null) begin
-            seq_item_port.item_done();
             drive_one_pkt(req);
+            seq_item_port.item_done(req);
         end
         else begin
             // insert an idle cycle
@@ -148,7 +147,7 @@ endfunction: extract_phase
 /*----------------------------------------------------------------------------*/
 /*  Other Class Functions and Tasks                                           */
 /*----------------------------------------------------------------------------*/
-task my_pecell_apb_driver::drive_one_pkt(input my_pecell_apb_transaction req);
+task my_pecell_apb_driver::drive_one_pkt(ref my_pecell_apb_transaction req);
     vif.apb_drv_cb.psel <= 'b1;
     vif.apb_drv_cb.paddr <= req.addr;
     vif.apb_drv_cb.penable <= 'b0;
@@ -161,15 +160,19 @@ task my_pecell_apb_driver::drive_one_pkt(input my_pecell_apb_transaction req);
     end
     @(vif.apb_drv_cb);
     vif.apb_drv_cb.penable <= 'b1;
+    wait(vif.apb_drv_cb.pready == 'b1);
     @(vif.apb_drv_cb);
-    forever begin
-        if (vif.apb_drv_cb.pready == 'b1) begin
-            break;
-        end
-        else begin
-            @(vif.apb_drv_cb);
-        end
+    if (req.kind == my_pecell_apb_transaction::READ) begin
+        req.data = vif.apb_drv_cb.prdata;
     end
+    // forever begin
+    //     if (vif.apb_drv_cb.pready == 'b1) begin
+    //         break;
+    //     end
+    //     else begin
+    //         @(vif.apb_drv_cb);
+    //     end
+    // end
 endtask: drive_one_pkt
 
 

@@ -180,15 +180,16 @@ task my_pecell_inout_driver::drive_one_pkt(input my_pecell_inout_transaction req
         if (i == req.wdata_len - 1) begin
             vif.inout_drv_cb.wdata_last <= 'b1;
         end
+        wait(vif.inout_drv_cb.wdata_busy == 'b0);
         @(vif.inout_drv_cb);
-        forever begin
-            if (vif.inout_drv_cb.wdata_busy == 'b0) begin
-                break;
-            end
-            else begin
-                @(vif.inout_drv_cb);
-            end
-        end
+        // forever begin
+        //     if (vif.inout_drv_cb.wdata_busy == 'b0) begin
+        //         break;
+        //     end
+        //     else begin
+        //         @(vif.inout_drv_cb);
+        //     end
+        // end
         vif.inout_drv_cb.wdata_valid <= 'b0;
         vif.inout_drv_cb.wdata_last <= 'b0;
     end

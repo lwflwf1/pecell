@@ -120,6 +120,7 @@ function void my_pecell_env::connect_phase(uvm_phase phase);
 
     
     m_regmdl.map.set_sequencer(m_pecell_apb_agt.m_sqr, m_adapter);
+    m_regmdl.map.set_auto_predict(1);
     m_predictor.map = m_regmdl.map;
     m_predictor.adapter = m_adapter;
     m_pecell_apb_agt.m_mon.ap.connect(m_predictor.bus_in);
@@ -164,7 +165,20 @@ endtask: run_phase
 /*  UVM Cleanup Phases                                                        */
 /*----------------------------------------------------------------------------*/
 function void my_pecell_env::report_phase(uvm_phase phase);
+    uvm_report_server server;
+    int err_num;
+
     super.report_phase(phase);
+    
+    server = get_report_server();
+    err_num = server.get_severity_count(UVM_ERROR);
+    
+    if (err_num == 0) begin
+        `uvm_info("TEST CASE PASS", "", UVM_LOW)
+    end
+    else begin
+        `uvm_error("TEST CASE FAIL", "")
+    end
 endfunction: report_phase
 
 

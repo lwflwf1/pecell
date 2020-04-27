@@ -97,7 +97,7 @@ interface my_pecell_interface
     endclocking
     // assert and cover property
     property rlast_p;
-        @(posedge clk) $rose(rdata_valid) ##[*] (rdata_valid && !rdata_busy)[->33] |-> $rose(rdata_last) ##1 $fell(rdata_last) && $fell(rdata_valid);
+        @(posedge clk) $rose(rdata_valid) |-> ##[0:$] (rdata_valid && !rdata_busy)[->33] ##0 $rose(rdata_last) ##1 $fell(rdata_last) ##0 $fell(rdata_valid);
     endproperty
 
     rlast_a: assert property(rlast_p) else `uvm_error("assert", "assert rlast fail")

@@ -166,6 +166,7 @@ task my_pecell_apb_monitor::collect_wdata();
         tr.data = vif.apb_mon_cb.pwdata;
         tr.kind = my_pecell_apb_transaction::WRITE;
         ap.write(tr);
+        to_ref_mdl_ap.write(tr);
     end
 endtask: collect_wdata
 

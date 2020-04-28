@@ -26,7 +26,9 @@ class my_pecell_reference_model extends uvm_component;
     virtual my_pecell_interface vif;
     my_pecell_register_model m_regmdl;
     logic [6:0] pe_id;
-    
+    uvm_status_e status;
+    uvm_reg_data_t value;
+    logic [7:0] reg_reuse;
 
 
     //  Group: Variables
@@ -148,18 +150,17 @@ endtask: shutdown_phase
 task my_pecell_reference_model::run_phase(uvm_phase phase);
     my_pecell_inout_transaction tr;
     forever begin
-        if (in_vector_q.size() > 0) begin
-            tr = my_pecell_inout_transaction::type_id::create("tr");
-            tr.data = new[33];
-            calculate(tr);
-            tr_id++;
-            tr.id = tr_id;
-            to_scb_ap.write(tr);
-            `uvm_info(get_type_name(), "send one packet", UVM_MEDIUM)
-        end
-        else begin
-            @(posedge vif.clk);
-        end
+        wait(in_vector_q.size() > 0);
+        // if (in_vector_q.size() > 0) begin
+        tr = my_pecell_inout_transaction::type_id::create("tr");
+        tr.data = new[33];
+        calculate(tr);
+        tr_id++;
+        tr.id = tr_id;
+        to_scb_ap.write(tr);
+        `uvm_info(get_type_name(), "send one packet", UVM_MEDIUM)
+        // end
+        // else @(posedge vif.clk);
     end
 endtask: run_phase
 
@@ -181,13 +182,17 @@ endfunction: extract_phase
 /*----------------------------------------------------------------------------*/
 /* uvm_analysis_imp write functions                                           */
 function void my_pecell_reference_model::write_apb(input my_pecell_apb_transaction tr);
+    if (tr.addr == 'h4) begin
+        reg_reuse = tr.data;
+    end
 endfunction
 
 
 function void my_pecell_reference_model::write_inout(input my_pecell_inout_transaction tr);
     if (tr.work_mode == WRITE) begin
         foreach ( tr.data[i] ) begin
-            weight[tr.addr][i] = tr.data[i];
+            if(reg_reuse[1:0] == 'b01) weight[tr.addr][i] = tr.data[i];
+            else weight[tr.addr][i] = ~tr.data[i];
         end
     end
     else if (tr.work_mode == CALCULATE || tr.work_mode == READ) begin
@@ -203,19 +208,19 @@ endfunction
 /*----------------------------------------------------------------------------*/
 task my_pecell_reference_model::calculate(ref my_pecell_inout_transaction tr);
     in_vector_t vector = in_vector_q.pop_back();
-    uvm_status_e status;
-    uvm_reg_data_t value;
     int rdata_tmp;
+    // uvm_status_e status;
+    // uvm_reg_data_t value;
+    // m_regmdl.reg_reuse.read(status, value, UVM_BACKDOOR);
+    // if (status != UVM_IS_OK) begin
+    //     `uvm_fatal(get_type_name(), "read reg_reuse fail")
+    // end
     tr.data[0] = pe_id;
-    m_regmdl.reg_reuse.read(status, value, UVM_FRONTDOOR);
-    if (status != UVM_IS_OK) begin
-        `uvm_fatal(get_type_name(), "read reg_reuse fail")
-    end
     foreach (weight[i]) begin
         foreach ( weight[,j] ) begin
             rdata_tmp += weight[i][j] * vector[j]; 
         end
-        case (value[7:4])
+        case (reg_reuse[7:4])
             4'd0: tr.data[i+1] = {rdata_tmp[31], rdata_tmp[20:14]};
             4'd1: tr.data[i+1] = {rdata_tmp[31], rdata_tmp[19:13]};
             4'd2: tr.data[i+1] = {rdata_tmp[31], rdata_tmp[18:12]};

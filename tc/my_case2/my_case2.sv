@@ -34,6 +34,7 @@ endclass: my_pecell_apb_sequence
 
 
 task my_pecell_apb_sequence::body();
+    bit set_reg_done = 0;
     if (!uvm_config_db#(my_pecell_register_model)::get(null, get_full_name(), "regmdl", m_regmdl)) begin
         `uvm_fatal(get_type_name(), "cannot get regmdl")
     end
@@ -51,6 +52,7 @@ task my_pecell_apb_sequence::body();
                                             set reg_set_cycle2: %0d\n\
                                             set reg_set_cycle3: %0d\n\
                                             set reg_reuse: %8b\n", value[0], value[1], value[2], value[3], value[4]), UVM_MEDIUM)
+    uvm_config_db#(bit)::set(null, "uvm_test_top.m_env.m_ref_mdl", "set_reg_done", set_reg_done);
 endtask: body
 
 

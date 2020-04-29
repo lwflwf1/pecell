@@ -230,7 +230,12 @@ always @(posedge clk or negedge rst_n) begin
 	if(~rst_n) begin
 		write_mem_ready <= 1'b0;
 	end else begin
-		write_mem_ready <= #DLY (cnt_rev_wdata == 6'd35) && (cur_state == WRITE_MEM);
+		if(cur_state == WRITE_MEM && next_state != IDLE && cnt_rev_wdata == 6'd35) begin 
+			write_mem_ready <= #DLY 1'b1;
+		end
+		else if(cur_state == WRITE_MEM && next_state == IDLE) begin
+			write_mem_ready <= #DLY 1'b0;
+		end
 	end
 end
 
@@ -555,7 +560,12 @@ always @(posedge clk or negedge rst_n) begin
 		cnt_send_rdata <= 'd0;
 	end else begin
 		if(cur_state == PIM_MEM && rdata_valid == 1'b1 && rdata_busy == 1'b0 && id_cycle == 1'b1) begin 
-			cnt_send_rdata <= #DLY cnt_send_rdata + 1'b1;
+			if(cnt_send_rdata != 5'd31) begin
+				cnt_send_rdata <= #DLY cnt_send_rdata + 1'b1;
+			end
+		end
+		else if(cur_state == IDLE) begin 
+			cnt_send_rdata <= #DLY 'd0;
 		end
 	end
 end
@@ -564,11 +574,13 @@ always @(posedge clk or negedge rst_n) begin
 	if(~rst_n) begin
 		rdata_last <= 1'b0;
 	end else begin
-		if(rdata_last == 1'b1) begin 
-			rdata_last <= #DLY 1'b0;
-		end
-		else if(cnt_send_rdata == 5'd30) begin 
-			rdata_last <= #DLY 1'b1;
+		if(rdata_busy == 1'b0) begin 
+			if(rdata_last == 1'b1) begin 
+				rdata_last <= #DLY 1'b0;
+			end
+			else if(cnt_send_rdata == 5'd30) begin 
+				rdata_last <= #DLY 1'b1;
+			end
 		end
 	end
 end
@@ -577,7 +589,7 @@ always @(posedge clk or negedge rst_n) begin
 	if(~rst_n) begin
 		rdata_valid <= 1'b0;
 	end else begin
-		if(rdata_last == 1'b1) begin 
+		if(rdata_last == 1'b1 && rdata_busy == 1'b0) begin 
 			rdata_valid <= #DLY 1'b0;
 		end
 		else if(result_valid == 1'b1 && cur_state == PIM_MEM) begin 

@@ -138,7 +138,7 @@ endtask: shutdown_phase
 task my_pecell_scoreboard::run_phase(uvm_phase phase);
     forever begin
         if (exp_q.size() > 0 && act_q.size() > 0) begin
-            compare(act_q.pop_back(), exp_q.pop_back());
+            compare(act_q.pop_front(), exp_q.pop_front());
         end
         else begin
             @(posedge vif.clk);
@@ -154,7 +154,7 @@ endtask: run_phase
 function void my_pecell_scoreboard::report_phase(uvm_phase phase);
     super.report_phase(phase);
     for(;exp_q.size() > 0 && act_q.size() > 0;) begin
-        compare(act_q.pop_back(), exp_q.pop_back());
+        compare(act_q.pop_front(), exp_q.pop_front());
     end
     if (exp_q.size() == 0 && act_q.size() == 0) begin
         `uvm_info(get_type_name(), "compare done", UVM_MEDIUM)

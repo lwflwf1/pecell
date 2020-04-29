@@ -207,7 +207,7 @@ endfunction
 /*  Other Class Functions and Tasks                                           */
 /*----------------------------------------------------------------------------*/
 task my_pecell_reference_model::calculate(ref my_pecell_inout_transaction tr);
-    in_vector_t vector = in_vector_q.pop_back();
+    in_vector_t vector = in_vector_q.pop_front();
     int rdata_tmp;
     // uvm_status_e status;
     // uvm_reg_data_t value;
@@ -241,4 +241,3 @@ task my_pecell_reference_model::calculate(ref my_pecell_inout_transaction tr);
         rdata_tmp = 0;
     end
 endtask: calculate
-

@@ -17,16 +17,21 @@ class my_pecell_inout_transaction extends uvm_sequence_item;
     //  Group: Variables
     rand work_mode_e work_mode;
     rand int cvalid_after_csn;
-    rand logic [4:0]addr;
+    randc logic [4:0]addr;
     rand logic signed [`WID_BUS-1:0]data[];
     rand int wdata_interval_cycle[];
     rand int wdata_len;
     rand int csn_undo_cycle; //-1: do not undo cs_n
     int unsigned id = 0;
+    randc int read_index;
 
     //  Group: Constraint
     constraint addr_c {
         addr inside {[0:31]};
+    }
+
+    constraint read_index_c {
+        read_index inside {[0:35]};
     }
 
     constraint wdata_len_c {
@@ -36,9 +41,9 @@ class my_pecell_inout_transaction extends uvm_sequence_item;
     }
 
     constraint cycle_c {
-        foreach (wdata_interval_cycle[i]) soft wdata_interval_cycle[i] == 0;
-        soft cvalid_after_csn == 1;
-        soft csn_undo_cycle == 0;
+        foreach (wdata_interval_cycle[i]) wdata_interval_cycle[i] >= 0;
+        cvalid_after_csn >= 1;
+        csn_undo_cycle >= -1;
     }
 
 

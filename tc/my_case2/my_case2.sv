@@ -87,6 +87,9 @@ task my_pecell_inout_sequence::body();
             foreach(data[j]) data[j] == j;
             addr == local::i;
             work_mode == WRITE;
+            foreach (wdata_interval_cycle[i]) wdata_interval_cycle[i] == 0;
+            cvalid_after_csn == 1;
+            csn_undo_cycle == 0;
         });
         finish_item(tr);
         `uvm_info(get_type_name(), "send one weight vector to driver", UVM_MEDIUM)
@@ -97,6 +100,9 @@ task my_pecell_inout_sequence::body();
         tr.randomize() with {
             foreach(data[j]) data[j] == 0;
             work_mode == CALCULATE;
+            foreach (wdata_interval_cycle[i]) wdata_interval_cycle[i] == 0;
+            cvalid_after_csn == 1;
+            csn_undo_cycle == 0;
         };
         tr.data[i] = 1;
         finish_item(tr);

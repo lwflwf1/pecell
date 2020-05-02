@@ -1,12 +1,9 @@
 #! /usr/bin/perl -w
 if(@ARGV < 2) {
-    die "not enough argument!!\n";
+    die "not enough argument\n";
 }
 my $src = "my_case".$ARGV[0];
-my @dst;
-foreach (@ARGV[1..$#ARGV]) {
-    push @dst, ($_);
-}
+my @dst = @ARGV[1..$#ARGV];
 foreach (@dst) {
     my $dst = "my_case".$_;
     mkdir "./tc/$dst";

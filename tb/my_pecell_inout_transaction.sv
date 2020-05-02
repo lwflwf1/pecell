@@ -24,6 +24,7 @@ class my_pecell_inout_transaction extends uvm_sequence_item;
     rand int csn_undo_cycle; //-1: do not undo cs_n
     int unsigned id = 0;
     randc int read_index;
+    rand int cycle;
 
     //  Group: Constraint
     constraint addr_c {
@@ -44,6 +45,7 @@ class my_pecell_inout_transaction extends uvm_sequence_item;
         foreach (wdata_interval_cycle[i]) wdata_interval_cycle[i] >= 0;
         cvalid_after_csn >= 1;
         csn_undo_cycle >= -1;
+        soft cycle == 0;
     }
 
 

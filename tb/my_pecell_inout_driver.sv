@@ -189,6 +189,7 @@ task my_pecell_inout_driver::drive_one_pkt(input my_pecell_inout_transaction req
         repeat(req.csn_undo_cycle) @(vif.inout_drv_cb);
         vif.inout_drv_cb.cs_n <= 'b1;
     end
+    repeat(req.cycle) @(vif.inout_drv_cb);
 endtask: drive_one_pkt
 
 

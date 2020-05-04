@@ -107,6 +107,15 @@ task my_pecell_inout_sequence::body();
         tr.data[i] = 1;
         finish_item(tr);
         `uvm_info(get_type_name(), "send one input vector to driver", UVM_MEDIUM)
+    start_item(tr);
+    assert(tr.randomize() with {
+        work_mode == IDLE;
+        wdata_len == 1;
+        foreach (wdata_interval_cycle[i]) wdata_interval_cycle[i] == 0;
+        cvalid_after_csn == 1;
+        csn_undo_cycle == 0;
+    });
+    finish_item(tr);
     end
 endtask: body
 
@@ -172,9 +181,7 @@ endtask: pre_start
 
 // Task: post_start
 task my_pecell_virtual_sequence::post_start();
-    wait(p_sequencer.vif.inout_mon_cb.rdata_last == 'b1);
-    @(p_sequencer.vif.inout_mon_cb);
-    @(p_sequencer.vif.inout_mon_cb);
+    #1000;
     if (starting_phase != null) begin
         starting_phase.drop_objection(this);
     end

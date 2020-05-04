@@ -28,7 +28,8 @@ class my_pecell_apb_transaction extends uvm_sequence_item;
     }
 
     constraint reg_set_cycle0_c {
-        (addr == 'b0) -> (data != 'b0);
+        (addr == 'h0) -> (data != 'b0);
+        (addr == 'h4) -> (data[1:0] inside {'b01, 'b10});
     }
 
 

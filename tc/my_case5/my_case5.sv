@@ -42,7 +42,7 @@ task my_pecell_apb_sequence::body();
     value[0] = 'b1;
     std::randomize(value[4]);
     value[4][7:4] = 'hf;
-    value[4][2:1] = 'b10;
+    value[4][1:0] = 'b10;
     m_regmdl.reg_set_cycle0.write(status, value[0], UVM_FRONTDOOR, .parent(this));
     m_regmdl.reg_set_cycle1.write(status, value[1], UVM_FRONTDOOR, .parent(this));
     m_regmdl.reg_set_cycle2.write(status, value[2], UVM_FRONTDOOR, .parent(this));
@@ -108,6 +108,7 @@ task my_pecell_inout_sequence::body();
             finish_item(tr_idle);
         end
     end
+    tr = my_pecell_inout_transaction::type_id::create("tr");
     for(int i = 0; i < input_data_num; i++) begin
         start_item(tr);
         tr.randomize() with {
@@ -197,9 +198,7 @@ endtask: pre_start
 
 // Task: post_start
 task my_pecell_virtual_sequence::post_start();
-    wait(p_sequencer.vif.inout_mon_cb.rdata_last == 'b1);
-    @(p_sequencer.vif.inout_mon_cb);
-    @(p_sequencer.vif.inout_mon_cb);
+    #1000;
     if (starting_phase != null) begin
         starting_phase.drop_objection(this);
     end

@@ -35,13 +35,15 @@ endclass: my_pecell_apb_sequence
 
 task my_pecell_apb_sequence::body();
     bit set_reg_done = 0;
+    my_pecell_apb_transaction tr;
     if (!uvm_config_db#(my_pecell_register_model)::get(null, get_full_name(), "regmdl", m_regmdl)) begin
         `uvm_fatal(get_type_name(), "cannot get regmdl")
     end
+    tr = my_pecell_apb_transaction::type_id::create("tr");
+    tr.randomize() with {data[7:4] == 'h0;};
     value = '{5{0}};
     value[0] = 'b1;
-    std::randomize(value[4]);
-    value[4][7:4] = 'h0;
+    value[4] = tr.data;
     m_regmdl.reg_set_cycle0.write(status, value[0], UVM_FRONTDOOR, .parent(this));
     m_regmdl.reg_set_cycle1.write(status, value[1], UVM_FRONTDOOR, .parent(this));
     m_regmdl.reg_set_cycle2.write(status, value[2], UVM_FRONTDOOR, .parent(this));
@@ -104,6 +106,15 @@ task my_pecell_inout_sequence::body();
         };
         finish_item(tr);
     end
+    start_item(tr);
+    assert(tr.randomize() with {
+        work_mode == IDLE;
+        wdata_len == 1;
+        foreach (wdata_interval_cycle[i]) wdata_interval_cycle[i] == 0;
+        cvalid_after_csn == 1;
+        csn_undo_cycle == 0;
+    });
+    finish_item(tr);
 endtask: body
 
 
@@ -168,9 +179,7 @@ endtask: pre_start
 
 // Task: post_start
 task my_pecell_virtual_sequence::post_start();
-    wait(p_sequencer.vif.inout_mon_cb.rdata_last == 'b1);
-    @(p_sequencer.vif.inout_mon_cb);
-    @(p_sequencer.vif.inout_mon_cb);
+    #1000;
     if (starting_phase != null) begin
         starting_phase.drop_objection(this);
     end
@@ -190,6 +199,7 @@ class my_case6 extends my_pecell_base_test;
     `uvm_component_utils(my_case6)
 
     //  Group: Config
+    logic [6:0] pe_id;
     
 
     //  Group: Variables
@@ -250,7 +260,8 @@ function void my_case6::build_phase(uvm_phase phase);
     tbcfg.apb_agt_is_active = UVM_ACTIVE;
     tbcfg.inout_agt_is_active = UVM_ACTIVE;
     tbcfg.rdata_busy_mode = RAND;
-    std::randomize(tbcfg.pe_id)
+    std::randomize(pe_id);
+    tbcfg.pe_id = pe_id;
 
     super.build_phase(phase);
     m_vseq = my_pecell_virtual_sequence::type_id::create("m_vseq");

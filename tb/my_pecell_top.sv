@@ -78,7 +78,7 @@ module my_pecell_top();
     initial begin//do_not_remove 
         $fsdbAutoSwitchDumpfile(1000, "./fsdb/test_fsdb.fsdb", 10);//do_not_remove 
         $fsdbDumpvars(0, my_pecell_top);//do_not_remove 
-        // $fsdbDumpMDA(1000, my_pecell_top);//do_not_remove 
+        $fsdbDumpMDA(1000, my_pecell_top);//do_not_remove 
         // $fsdbDumpflush();//do_not_remove 
         //$fsdbDumpvars("+all");//do_not_remove 
     end//do_not_remove 

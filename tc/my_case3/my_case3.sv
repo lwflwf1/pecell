@@ -92,6 +92,7 @@ task my_pecell_inout_sequence::body();
         finish_item(tr);
         `uvm_info(get_type_name(), "send one weight vector to driver", UVM_MEDIUM)
     end
+    tr = my_pecell_inout_transaction::type_id::create("tr");
     for(int i = 0; i < input_data_num; i++) begin
         start_item(tr);
         tr.randomize() with {

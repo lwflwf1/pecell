@@ -106,6 +106,7 @@ task my_pecell_inout_sequence::body();
             finish_item(tr_idle);
         end
     end
+    tr = my_pecell_inout_transaction::type_id::create("tr");
     for(int i = 0; i < input_data_num; i++) begin
         start_item(tr);
         tr.randomize() with {
@@ -195,9 +196,7 @@ endtask: pre_start
 
 // Task: post_start
 task my_pecell_virtual_sequence::post_start();
-    wait(p_sequencer.vif.inout_mon_cb.rdata_last == 'b1);
-    @(p_sequencer.vif.inout_mon_cb);
-    @(p_sequencer.vif.inout_mon_cb);
+    #1000;
     if (starting_phase != null) begin
         starting_phase.drop_objection(this);
     end

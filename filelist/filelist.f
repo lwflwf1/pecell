@@ -23,6 +23,7 @@
 ./tb/my_pecell_base_test.sv
 ./tb/my_pecell_top.sv
 ./rtl/pe_cell.v
+./rtl/pe_cell_top.v
 ./rtl/dff.v
 ./rtl/pe_cell_reg_inf.v
 ./rtl/pe_cell_contrl.v

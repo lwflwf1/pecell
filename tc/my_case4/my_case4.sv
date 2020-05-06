@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////
 // file name   : my_case4.sv
-// create time : 2020-4-29
+// create time : 2020-5-5
 // author      : Gong Yingfan
 // version     : v1.0
 // cescript    : my_case4
@@ -64,7 +64,6 @@ class my_pecell_inout_sequence extends uvm_sequence;
 
     //  Group: Variables
     my_pecell_inout_transaction tr;
-    my_pecell_inout_transaction tr_idle;
     int input_data_num = 36;
     
 
@@ -81,57 +80,42 @@ class my_pecell_inout_sequence extends uvm_sequence;
 endclass: my_pecell_inout_sequence
 
 task my_pecell_inout_sequence::body();
-    int gap;
     tr = my_pecell_inout_transaction::type_id::create("tr");
     for(int i = 0; i < 32; i++) begin
         start_item(tr);
         assert(tr.randomize() with {
             work_mode == WRITE;
-            cvalid_after_csn <= 10;
-            foreach (wdata_interval_cycle[i]) wdata_interval_cycle[i] <= 10;
-            csn_undo_cycle <= 10;
+            foreach(data[j]) data[j] == -128;
+            foreach (wdata_interval_cycle[i]) wdata_interval_cycle[i] == 0;
+            cvalid_after_csn == 1;
+            csn_undo_cycle == 0;
         });
         finish_item(tr);
         `uvm_info(get_type_name(), "send one weight vector to driver", UVM_MEDIUM)
-        std::randomize(gap) with {gap inside {[0:10]};};
-        repeat(gap) begin
-            tr_idle = my_pecell_inout_transaction::type_id::create("tr_idle");
-            start_item(tr_idle);
-            assert(tr_idle.randomize() with {
-                work_mode == IDLE;
-                foreach (wdata_interval_cycle[i]) wdata_interval_cycle[i] == 0;
-                cvalid_after_csn == 1;
-                csn_undo_cycle == 0;
-            });
-            finish_item(tr_idle);
-        end
     end
     tr = my_pecell_inout_transaction::type_id::create("tr");
     for(int i = 0; i < input_data_num; i++) begin
         start_item(tr);
         tr.randomize() with {
             foreach(data[j]) data[j] == 0;
-            work_mode inside {CALCULATE, READ};
-            foreach (wdata_interval_cycle[i]) wdata_interval_cycle[i] <= 10;
-            cvalid_after_csn <= 10;
-            csn_undo_cycle <= 10;
+            work_mode == READ;
+            foreach (wdata_interval_cycle[i]) wdata_interval_cycle[i] == 0;
+            cvalid_after_csn == 1;
+            csn_undo_cycle == 0;
         };
-        tr.data[tr.read_index] = 1;
+        tr.data[i] = 1;
         finish_item(tr);
         `uvm_info(get_type_name(), "send one input vector to driver", UVM_MEDIUM)
-        std::randomize(gap) with {gap inside {[0:10]};};
-        repeat(gap) begin
-            tr_idle = my_pecell_inout_transaction::type_id::create("tr_idle");
-            start_item(tr_idle);
-            assert(tr_idle.randomize() with {
-                work_mode == IDLE;
-                foreach (wdata_interval_cycle[i]) wdata_interval_cycle[i] == 0;
-                cvalid_after_csn == 1;
-                csn_undo_cycle == 0;
-            });
-            finish_item(tr_idle);
-        end
     end
+    start_item(tr);
+    assert(tr.randomize() with {
+        work_mode == IDLE;
+        wdata_len == 1;
+        foreach (wdata_interval_cycle[i]) wdata_interval_cycle[i] == 0;
+        cvalid_after_csn == 1;
+        csn_undo_cycle == 0;
+    });
+    finish_item(tr);
 endtask: body
 
 
@@ -196,7 +180,7 @@ endtask: pre_start
 
 // Task: post_start
 task my_pecell_virtual_sequence::post_start();
-    #1000;
+    #1000ns;
     if (starting_phase != null) begin
         starting_phase.drop_objection(this);
     end
@@ -275,7 +259,6 @@ function void my_case4::build_phase(uvm_phase phase);
     // set tbcfg, this must before super.build_phase() 
     tbcfg.apb_agt_is_active = UVM_ACTIVE;
     tbcfg.inout_agt_is_active = UVM_ACTIVE;
-    tbcfg.rdata_busy_mode = RAND;
 
     super.build_phase(phase);
     m_vseq = my_pecell_virtual_sequence::type_id::create("m_vseq");

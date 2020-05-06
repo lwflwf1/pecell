@@ -1,9 +1,9 @@
 ///////////////////////////////////////////////
-// file name   : my_case3.sv
-// create time : 2020-4-28
+// file name   : my_case8.sv
+// create time : 2020-5-5
 // author      : Gong Yingfan
 // version     : v1.0
-// cescript    : my_case3
+// cescript    : my_case8
 // log         : no
 ///////////////////////////////////////////////
 
@@ -64,6 +64,7 @@ class my_pecell_inout_sequence extends uvm_sequence;
 
     //  Group: Variables
     my_pecell_inout_transaction tr;
+    my_pecell_inout_transaction tr_idle;
     int input_data_num = 36;
     
 
@@ -80,18 +81,30 @@ class my_pecell_inout_sequence extends uvm_sequence;
 endclass: my_pecell_inout_sequence
 
 task my_pecell_inout_sequence::body();
+    int gap;
     tr = my_pecell_inout_transaction::type_id::create("tr");
     for(int i = 0; i < 32; i++) begin
         start_item(tr);
         assert(tr.randomize() with {
             work_mode == WRITE;
-            foreach(data[j]) data[j] == 127;
-            foreach (wdata_interval_cycle[i]) wdata_interval_cycle[i] == 0;
-            cvalid_after_csn == 1;
-            csn_undo_cycle == 0;
+            cvalid_after_csn <= 10;
+            foreach (wdata_interval_cycle[i]) wdata_interval_cycle[i] <= 10;
+            csn_undo_cycle <= 10;
         });
         finish_item(tr);
         `uvm_info(get_type_name(), "send one weight vector to driver", UVM_MEDIUM)
+        std::randomize(gap) with {gap inside {[0:10]};};
+        repeat(gap) begin
+            tr_idle = my_pecell_inout_transaction::type_id::create("tr_idle");
+            start_item(tr_idle);
+            assert(tr_idle.randomize() with {
+                work_mode == IDLE;
+                foreach (wdata_interval_cycle[i]) wdata_interval_cycle[i] == 0;
+                cvalid_after_csn == 1;
+                csn_undo_cycle == 0;
+            });
+            finish_item(tr_idle);
+        end
     end
     tr = my_pecell_inout_transaction::type_id::create("tr");
     for(int i = 0; i < input_data_num; i++) begin
@@ -99,23 +112,26 @@ task my_pecell_inout_sequence::body();
         tr.randomize() with {
             foreach(data[j]) data[j] == 0;
             work_mode == READ;
-            foreach (wdata_interval_cycle[i]) wdata_interval_cycle[i] == 0;
-            cvalid_after_csn == 1;
-            csn_undo_cycle == 0;
+            foreach (wdata_interval_cycle[i]) wdata_interval_cycle[i] <= 10;
+            cvalid_after_csn <= 10;
+            csn_undo_cycle <= 10;
         };
-        tr.data[i] = 1;
+        tr.data[tr.read_index] = 1;
         finish_item(tr);
         `uvm_info(get_type_name(), "send one input vector to driver", UVM_MEDIUM)
+        std::randomize(gap) with {gap inside {[0:10]};};
+        repeat(gap) begin
+            tr_idle = my_pecell_inout_transaction::type_id::create("tr_idle");
+            start_item(tr_idle);
+            assert(tr_idle.randomize() with {
+                work_mode == IDLE;
+                foreach (wdata_interval_cycle[i]) wdata_interval_cycle[i] == 0;
+                cvalid_after_csn == 1;
+                csn_undo_cycle == 0;
+            });
+            finish_item(tr_idle);
+        end
     end
-    start_item(tr);
-    assert(tr.randomize() with {
-        work_mode == IDLE;
-        wdata_len == 1;
-        foreach (wdata_interval_cycle[i]) wdata_interval_cycle[i] == 0;
-        cvalid_after_csn == 1;
-        csn_undo_cycle == 0;
-    });
-    finish_item(tr);
 endtask: body
 
 
@@ -180,7 +196,7 @@ endtask: pre_start
 
 // Task: post_start
 task my_pecell_virtual_sequence::post_start();
-    #1000ns;
+    #1000;
     if (starting_phase != null) begin
         starting_phase.drop_objection(this);
     end
@@ -194,10 +210,10 @@ endtask: post_start
 
 
 
-//  Class: my_case3
+//  Class: my_case8
 //
-class my_case3 extends my_pecell_base_test;
-    `uvm_component_utils(my_case3)
+class my_case8 extends my_pecell_base_test;
+    `uvm_component_utils(my_case8)
 
     //  Group: Config
     
@@ -209,7 +225,7 @@ class my_case3 extends my_pecell_base_test;
     //  Group: Functions
 
     //  Constructor: new
-    function new(string name = "my_case3", uvm_component parent);
+    function new(string name = "my_case8", uvm_component parent);
         super.new(name, parent);
     endfunction: new
 
@@ -246,19 +262,20 @@ class my_case3 extends my_pecell_base_test;
     //  Function: report_phase
     extern virtual function void report_phase(uvm_phase phase);
     
-endclass: my_case3
+endclass: my_case8
 
 
 /*----------------------------------------------------------------------------*/
 /*  UVM Build Phases                                                          */
 /*----------------------------------------------------------------------------*/
-function void my_case3::build_phase(uvm_phase phase);
+function void my_case8::build_phase(uvm_phase phase);
     /*  note: Do not call super.build_phase() from any class that is extended from an UVM base class!  */
     /*  For more information see UVM Cookbook v1800.2 p.503  */
 
     // set tbcfg, this must before super.build_phase() 
     tbcfg.apb_agt_is_active = UVM_ACTIVE;
     tbcfg.inout_agt_is_active = UVM_ACTIVE;
+    tbcfg.rdata_busy_mode = RAND;
 
     super.build_phase(phase);
     m_vseq = my_pecell_virtual_sequence::type_id::create("m_vseq");
@@ -266,7 +283,7 @@ function void my_case3::build_phase(uvm_phase phase);
 endfunction: build_phase
 
 
-function void my_case3::connect_phase(uvm_phase phase);
+function void my_case8::connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     // override report verbosity level, default is UVM_HIGH
     // m_env.set_report_verbosity_level_hier(UVM_HIGH);
@@ -277,7 +294,7 @@ function void my_case3::connect_phase(uvm_phase phase);
 endfunction: connect_phase
 
 
-function void my_case3::end_of_elaboration_phase(uvm_phase phase);
+function void my_case8::end_of_elaboration_phase(uvm_phase phase);
     super.end_of_elaboration_phase(phase);
 endfunction: end_of_elaboration_phase
 
@@ -285,32 +302,32 @@ endfunction: end_of_elaboration_phase
 /*----------------------------------------------------------------------------*/
 /*  UVM Run Phases                                                            */
 /*----------------------------------------------------------------------------*/
-function void my_case3::start_of_simulation_phase(uvm_phase phase);
+function void my_case8::start_of_simulation_phase(uvm_phase phase);
     super.start_of_simulation_phase(phase);
 endfunction: start_of_simulation_phase
 
 
-task my_case3::reset_phase(uvm_phase phase);
+task my_case8::reset_phase(uvm_phase phase);
     super.reset_phase(phase);
 endtask: reset_phase
 
 
-task my_case3::configure_phase(uvm_phase phase);
+task my_case8::configure_phase(uvm_phase phase);
     super.configure_phase(phase);
 endtask: configure_phase
 
 
-task my_case3::main_phase(uvm_phase phase);
+task my_case8::main_phase(uvm_phase phase);
     super.main_phase(phase);
 endtask: main_phase
 
 
-task my_case3::shutdown_phase(uvm_phase phase);
+task my_case8::shutdown_phase(uvm_phase phase);
     super.shutdown_phase(phase);
 endtask: shutdown_phase
 
 
-task my_case3::run_phase(uvm_phase phase);
+task my_case8::run_phase(uvm_phase phase);
     super.run_phase(phase);
     // start vseq on vsqr
     m_vseq.starting_phase = phase;
@@ -321,12 +338,12 @@ endtask: run_phase
 /*----------------------------------------------------------------------------*/
 /*  UVM Cleanup Phases                                                        */
 /*----------------------------------------------------------------------------*/
-function void my_case3::report_phase(uvm_phase phase);
+function void my_case8::report_phase(uvm_phase phase);
     super.report_phase(phase);
 endfunction: report_phase
 
 
-function void my_case3::extract_phase(uvm_phase phase);
+function void my_case8::extract_phase(uvm_phase phase);
     super.extract_phase(phase);
 endfunction: extract_phase
 

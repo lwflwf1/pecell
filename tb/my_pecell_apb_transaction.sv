@@ -16,7 +16,7 @@ class my_pecell_apb_transaction extends uvm_sequence_item;
     typedef enum bit {READ, WRITE} kind_e;
 
     //  Group: Variables
-    rand logic [3:0]addr;
+    randc logic [3:0]addr;
     rand logic [7:0]data;
     rand kind_e kind;
     rand logic [6:0]pe_id;
@@ -27,7 +27,7 @@ class my_pecell_apb_transaction extends uvm_sequence_item;
         addr inside {[0:4]};
     }
 
-    constraint reg_set_cycle0_c {
+    constraint reg_value_c {
         (addr == 'h0) -> (data != 'b0);
         (addr == 'h4) -> (data[1:0] inside {'b01, 'b10});
     }

@@ -97,7 +97,7 @@ task my_pecell_inout_sequence::body();
     start_item(tr);
     tr.randomize() with {
         foreach(data[j]) data[j] == 0;
-        work_mode == CALCULATE;
+        work_mode == READ;
         foreach (wdata_interval_cycle[i]) wdata_interval_cycle[i] == 0;
         cvalid_after_csn == 1;
         csn_undo_cycle == 0;

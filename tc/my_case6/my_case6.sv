@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////
 // file name   : my_case6.sv
-// create time : 2020-5-2
+// create time : 2020-5-5
 // author      : Gong Yingfan
 // version     : v1.0
 // cescript    : my_case6
@@ -35,15 +35,12 @@ endclass: my_pecell_apb_sequence
 
 task my_pecell_apb_sequence::body();
     bit set_reg_done = 0;
-    my_pecell_apb_transaction tr;
     if (!uvm_config_db#(my_pecell_register_model)::get(null, get_full_name(), "regmdl", m_regmdl)) begin
         `uvm_fatal(get_type_name(), "cannot get regmdl")
     end
-    tr = my_pecell_apb_transaction::type_id::create("tr");
-    tr.randomize() with {data[7:4] == 'h0;};
     value = '{5{0}};
     value[0] = 'b1;
-    value[4] = tr.data;
+    value[4] = 'hf1;
     m_regmdl.reg_set_cycle0.write(status, value[0], UVM_FRONTDOOR, .parent(this));
     m_regmdl.reg_set_cycle1.write(status, value[1], UVM_FRONTDOOR, .parent(this));
     m_regmdl.reg_set_cycle2.write(status, value[2], UVM_FRONTDOOR, .parent(this));
@@ -67,8 +64,7 @@ class my_pecell_inout_sequence extends uvm_sequence;
 
     //  Group: Variables
     my_pecell_inout_transaction tr;
-    my_pecell_inout_transaction tr_idle;
-    int input_data_num = 1;
+    int input_data_num = 36;
     
 
     //  Group: Functions
@@ -96,15 +92,19 @@ task my_pecell_inout_sequence::body();
         finish_item(tr);
         `uvm_info(get_type_name(), "send one weight vector to driver", UVM_MEDIUM)
     end
+    tr = my_pecell_inout_transaction::type_id::create("tr");
     for(int i = 0; i < input_data_num; i++) begin
         start_item(tr);
         tr.randomize() with {
-            work_mode inside {CALCULATE, READ};
+            foreach(data[j]) data[j] == 0;
+            work_mode == READ;
             foreach (wdata_interval_cycle[i]) wdata_interval_cycle[i] == 0;
             cvalid_after_csn == 1;
             csn_undo_cycle == 0;
         };
+        tr.data[tr.read_index] = 1;
         finish_item(tr);
+        `uvm_info(get_type_name(), "send one input vector to driver", UVM_MEDIUM)
     end
     start_item(tr);
     assert(tr.randomize() with {
@@ -179,7 +179,7 @@ endtask: pre_start
 
 // Task: post_start
 task my_pecell_virtual_sequence::post_start();
-    #1000;
+    #1000ns;
     if (starting_phase != null) begin
         starting_phase.drop_objection(this);
     end
@@ -199,7 +199,6 @@ class my_case6 extends my_pecell_base_test;
     `uvm_component_utils(my_case6)
 
     //  Group: Config
-    logic [6:0] pe_id;
     
 
     //  Group: Variables
@@ -259,9 +258,6 @@ function void my_case6::build_phase(uvm_phase phase);
     // set tbcfg, this must before super.build_phase() 
     tbcfg.apb_agt_is_active = UVM_ACTIVE;
     tbcfg.inout_agt_is_active = UVM_ACTIVE;
-    tbcfg.rdata_busy_mode = RAND;
-    std::randomize(pe_id);
-    tbcfg.pe_id = pe_id;
 
     super.build_phase(phase);
     m_vseq = my_pecell_virtual_sequence::type_id::create("m_vseq");

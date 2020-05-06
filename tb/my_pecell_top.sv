@@ -31,7 +31,7 @@ module my_pecell_top();
     );
 
     // DUT instantiation and interface connection  
-    pe_cell #(
+    pe_cell_top #(
         .WID_X(`WID_X),
         .WID_Y(`WID_Y),
         .ROW(`ROW),

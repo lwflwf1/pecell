@@ -21,6 +21,7 @@ class my_pecell_adapter extends uvm_reg_adapter;
     //  Constructor: new
     function new(string name = "my_pecell_adapter");
         super.new(name);
+        provides_responses = 1;
     endfunction: new
 
     virtual function uvm_sequence_item reg2bus(const ref uvm_reg_bus_op rw);

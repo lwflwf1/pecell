@@ -129,7 +129,7 @@ class my_pecell_register_model extends uvm_reg_block;
         map.add_reg(reg_set_cycle3, 4'h3, "RW");
         map.add_reg(reg_reuse, 4'h4, "RW");
         lock_model();
-        add_hdl_path("my_pecell_top.pe_cell_dut.u_pe_cell_reg_inf");
+        add_hdl_path("my_pecell_top.pe_cell_dut.u_pe_cell.u_pe_cell_reg_inf");
         reg_set_cycle0.add_hdl_path_slice("U_REG_RW_REG_SET_CYCLE0.mem", 0, 8);
         reg_set_cycle1.add_hdl_path_slice("U_REG_RW_REG_SET_CYCLE1.mem", 0, 8);
         reg_set_cycle2.add_hdl_path_slice("U_REG_RW_REG_SET_CYCLE2.mem", 0, 8);

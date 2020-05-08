@@ -121,8 +121,11 @@ task my_pecell_apb_driver::run_phase(uvm_phase phase);
     forever begin
         seq_item_port.try_next_item(req);
         if (req != null) begin
-            drive_one_pkt(req);
-            seq_item_port.item_done(req);
+            rsp = new req;
+            rsp.set_sequence_id(req.get_sequence_id());
+            rsp.set_transaction_id(req.get_transaction_id());
+            drive_one_pkt(rsp);
+            seq_item_port.item_done(rsp);
         end
         else begin
             // insert an idle cycle

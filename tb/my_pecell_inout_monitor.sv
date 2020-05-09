@@ -132,19 +132,40 @@ task my_pecell_inout_monitor::run_phase(uvm_phase phase);
         forever begin
             tr = my_pecell_inout_transaction::type_id::create("tr");
             tr.data = new[33];
-            collect_rdata_pkt(tr);
+            fork
+            begin : collect_rdata
+                collect_rdata_pkt(tr);
+                disable rst_listener_rdata;
+                `uvm_info({get_type_name(), ": rdata"}, "collect one packet", UVM_MEDIUM)
+            end
+            begin : rst_listener_rdata
+                wait(vif.rst_n == 'b0);
+                disable collect_rdata;
+                tr.exception = 1;
+                wait(vif.rst_n == 'b1);
+            end
+            join
             tr_id++;
             tr.id = tr_id;
             to_scb_ap.write(tr);
-            `uvm_info({get_type_name(), ": rdata"}, "collect one packet", UVM_MEDIUM)
         end
         forever begin
             tr = my_pecell_inout_transaction::type_id::create("tr");
             tr.data = new[tbcfg.wdata_len];
-            collect_wdata_pkt(tr);
-            to_ref_mdl_ap.write(tr);
-            to_sbr_ap.write(tr);
-            `uvm_info({get_type_name(), ": wdata"}, "collect one packet", UVM_MEDIUM)
+            fork
+            begin : collect_wdata
+                collect_wdata_pkt(tr);
+                disable rst_listener_wdata;
+                to_ref_mdl_ap.write(tr);
+                to_sbr_ap.write(tr);
+                `uvm_info({get_type_name(), ": wdata"}, "collect one packet", UVM_MEDIUM)
+            end
+            begin : rst_listener_wdata
+                wait(vif.rst_n == 'b0);
+                disable collect_wdata;
+                wait(vif.rst_n == 'b1);
+            end
+            join
         end
     join
 endtask: run_phase

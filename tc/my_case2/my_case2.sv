@@ -107,6 +107,7 @@ task my_pecell_inout_sequence::body();
         tr.data[i] = 1;
         finish_item(tr);
         `uvm_info(get_type_name(), "send one input vector to driver", UVM_MEDIUM)
+    end
     start_item(tr);
     assert(tr.randomize() with {
         work_mode == IDLE;
@@ -116,7 +117,6 @@ task my_pecell_inout_sequence::body();
         csn_undo_cycle == 0;
     });
     finish_item(tr);
-    end
 endtask: body
 
 

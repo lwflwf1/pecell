@@ -116,13 +116,26 @@ endtask: shutdown_phase
 
 
 task my_pecell_inout_driver::run_phase(uvm_phase phase);
+    bit drive_done = 1;
     wait(vif.rst_n == 1);
     fork
         forever begin
-            seq_item_port.try_next_item(req);
+            if(drive_done == 'b1) seq_item_port.try_next_item(req);
             if (req != null) begin
-                drive_one_pkt(req);
-                seq_item_port.item_done();
+                drive_done = 'b0;
+                fork
+                    begin : drive
+                        drive_one_pkt(req);
+                        disable rst_listener;
+                        drive_done = 'b1;
+                        seq_item_port.item_done();
+                    end
+                    begin : rst_listener
+                        wait(vif.rst_n == 'b0);
+                        disable drive;
+                        wait(vif.rst_n == 'b1);
+                    end
+                join
             end
             else begin
                 // insert an idle cycle

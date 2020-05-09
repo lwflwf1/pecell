@@ -25,6 +25,7 @@ class my_pecell_inout_transaction extends uvm_sequence_item;
     int unsigned id = 0;
     randc int read_index;
     rand int cycle;
+    bit exception = 0;
 
     //  Group: Constraint
     constraint addr_c {

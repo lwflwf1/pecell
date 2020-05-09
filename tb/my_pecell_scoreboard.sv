@@ -21,7 +21,7 @@ class my_pecell_scoreboard extends uvm_scoreboard;
     my_pecell_inout_transaction act_q[$];
     my_pecell_inout_transaction exp_q[$];
     virtual my_pecell_interface vif;
-    
+    my_pecell_register_model m_regmdl;
 
     //  Group: Variables
     
@@ -37,6 +37,7 @@ class my_pecell_scoreboard extends uvm_scoreboard;
     extern virtual function void write_inout(input my_pecell_inout_transaction tr);
     extern virtual function void write_ref(input my_pecell_inout_transaction tr);
     extern virtual function void compare(input my_pecell_inout_transaction act, input my_pecell_inout_transaction exp);
+    extern virtual task check_reset_reg();
 
     //  Constructor: new
     function new(string name = "my_pecell_scoreboard", uvm_component parent);
@@ -91,6 +92,9 @@ function void my_pecell_scoreboard::build_phase(uvm_phase phase);
     if (!uvm_config_db#(virtual my_pecell_interface)::get(this, "", "vif", vif)) begin
         `uvm_fatal(get_type_name(), "cannot get interface")
     end
+    if (!uvm_config_db#(my_pecell_register_model)::get(this, "", "regmdl", m_regmdl)) begin
+        `uvm_fatal(get_type_name(), "can not get m_regmdl")
+    end
 
 
     // create ports
@@ -136,14 +140,21 @@ endtask: shutdown_phase
 
 
 task my_pecell_scoreboard::run_phase(uvm_phase phase);
-    forever begin
-        if (exp_q.size() > 0 && act_q.size() > 0) begin
-            compare(act_q.pop_front(), exp_q.pop_front());
+    fork
+        forever begin
+            if (exp_q.size() > 0 && act_q.size() > 0) begin
+                compare(act_q.pop_front(), exp_q.pop_front());
+            end
+            else begin
+                @(posedge vif.clk);
+            end
         end
-        else begin
-            @(posedge vif.clk);
+        forever begin
+            @(negedge vif.rst_n);
+            #1;
+            check_reset_reg();
         end
-    end
+    join
 endtask: run_phase
 
 
@@ -207,3 +218,18 @@ function void my_pecell_scoreboard::compare(input my_pecell_inout_transaction ac
     end
     `uvm_info(get_type_name(), "compare success", UVM_MEDIUM)
 endfunction: compare
+
+task my_pecell_scoreboard::check_reset_reg();
+    uvm_reg_data_t reg_set_cycle;
+    uvm_reg_data_t reg_reuse;
+    uvm_status_e status;
+    m_regmdl.reg_set_cycle0.read(status, reg_set_cycle[7:0], UVM_BACKDOOR);
+    m_regmdl.reg_set_cycle1.read(status, reg_set_cycle[15:8], UVM_BACKDOOR);
+    m_regmdl.reg_set_cycle2.read(status, reg_set_cycle[23:16], UVM_BACKDOOR);
+    m_regmdl.reg_set_cycle3.read(status, reg_set_cycle[31:24], UVM_BACKDOOR);
+    m_regmdl.reg_reuse.read(status, reg_reuse, UVM_BACKDOOR);
+    if ((reg_set_cycle !== 'd2) || (reg_reuse !== 'h61)) begin
+        `uvm_error(get_type_name(), "register reset value is not correct!")
+    end
+    
+endtask

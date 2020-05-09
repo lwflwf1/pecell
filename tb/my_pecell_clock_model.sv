@@ -17,6 +17,8 @@ module my_pecell_clock_model
         output logic clk,
         output logic rst_n
     );
+
+    int cycle;
     
     initial begin
         rst_n = 1'b0;
@@ -27,6 +29,7 @@ module my_pecell_clock_model
         clk <= 1'b0;
         forever #(`PERIOD/2) clk = ~clk;
     end
+
     
 endmodule: my_pecell_clock_model
 

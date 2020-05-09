@@ -126,6 +126,8 @@ task my_pecell_inout_driver::run_phase(uvm_phase phase);
                 fork
                     begin : drive
                         drive_one_pkt(req);
+                        #2;
+                        wait(vif.inout_drv_cb.pe_busy == 'b0 && vif.rst_n == 1);
                         disable rst_listener;
                         drive_done = 'b1;
                         seq_item_port.item_done();
@@ -133,6 +135,10 @@ task my_pecell_inout_driver::run_phase(uvm_phase phase);
                     begin : rst_listener
                         wait(vif.rst_n == 'b0);
                         disable drive;
+                        vif.cs_n <= 1;
+                        vif.cvalid <= 0;
+                        vif.wdata_valid <= 0;
+                        vif.wdata_last <= 0;
                         wait(vif.rst_n == 'b1);
                     end
                 join

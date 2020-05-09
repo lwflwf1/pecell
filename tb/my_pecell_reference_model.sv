@@ -149,19 +149,26 @@ endtask: shutdown_phase
 
 task my_pecell_reference_model::run_phase(uvm_phase phase);
     my_pecell_inout_transaction tr;
-    forever begin
-        wait(in_vector_q.size() > 0);
-        // if (in_vector_q.size() > 0) begin
-        tr = my_pecell_inout_transaction::type_id::create("tr");
-        tr.data = new[33];
-        calculate(tr);
-        tr_id++;
-        tr.id = tr_id;
-        to_scb_ap.write(tr);
-        `uvm_info(get_type_name(), "send one packet", UVM_MEDIUM)
-        // end
-        // else @(posedge vif.clk);
-    end
+    fork
+        forever begin
+            wait(in_vector_q.size() > 0);
+            // if (in_vector_q.size() > 0) begin
+            tr = my_pecell_inout_transaction::type_id::create("tr");
+            tr.data = new[33];
+            calculate(tr);
+            tr_id++;
+            tr.id = tr_id;
+            to_scb_ap.write(tr);
+            `uvm_info(get_type_name(), "send one packet", UVM_MEDIUM)
+            // end
+            // else @(posedge vif.clk);
+        end
+        forever begin
+            wait(vif.rst_n == 'b0);
+            reg_reuse = 'h61;
+            wait(vif.rst_n == 'b1);
+        end
+    join
 endtask: run_phase
 
 
@@ -182,9 +189,8 @@ endfunction: extract_phase
 /*----------------------------------------------------------------------------*/
 /* uvm_analysis_imp write functions                                           */
 function void my_pecell_reference_model::write_apb(input my_pecell_apb_transaction tr);
-    if (tr.addr == 'h4) begin
-        reg_reuse = tr.data;
-    end
+    if (tr.addr == 'h4 && vif.rst_n == 'b1) reg_reuse = tr.data;
+    else if(vif.rst_n == 'b0) reg_reuse = 'h61;
 endfunction
 
 

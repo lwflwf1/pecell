@@ -27,6 +27,7 @@ class my_pecell_env extends uvm_env;
     my_pecell_adapter m_adapter;
     my_pecell_predictor m_predictor;
     my_pecell_register_model m_regmdl;
+    virtual my_pecell_interface vif;
 
 
     //  Group: Functions
@@ -94,6 +95,9 @@ function void my_pecell_env::build_phase(uvm_phase phase);
     if(!uvm_config_db#(my_pecell_register_model)::get(this, "", "regmdl", m_regmdl)) begin
         `uvm_fatal(get_type_name(), "cannot get m_regmdl!")
     end
+    // if (!uvm_config_db#(virtual my_pecell_interface)::get(this, "", "vif", vif)) begin
+    //     `uvm_fatal(get_type_name(), "cannot get interface")
+    // end
     // set config
     m_pecell_apb_agt.is_active = tbcfg.apb_agt_is_active;
     m_pecell_inout_agt.is_active = tbcfg.inout_agt_is_active;
@@ -158,6 +162,11 @@ endtask: shutdown_phase
 
 
 task my_pecell_env::run_phase(uvm_phase phase);
+    // forever begin
+    //     wait(vif.rst_n == 'b0);
+    //     m_regmdl.reset();
+    //     wait(vif.rst_n == 'b1);
+    // end
 endtask: run_phase
 
 

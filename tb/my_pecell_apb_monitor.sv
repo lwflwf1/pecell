@@ -129,14 +129,9 @@ endtask: shutdown_phase
 
 task my_pecell_apb_monitor::run_phase(uvm_phase phase);
     wait(vif.rst_n == 1);
-    fork
-        forever begin
-            collect_wdata();
-        end
-        forever begin
-            collect_rdata();
-        end
-    join
+    forever begin
+        collect_wdata();
+    end
 endtask: run_phase
 
 

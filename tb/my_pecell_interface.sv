@@ -105,8 +105,12 @@ interface my_pecell_interface
 
     `ifndef RESET_CAL
     rlast_a: assert property(rlast_p) else `uvm_error("assert", "assert rlast fail")
-    cover property(rlast_p);
+    `ifdef COV
+    rlast_c: cover property(rlast_p);
+    `endif
     `endif
     reset_a: assert property(reset_p) else `uvm_error("assert", "assert reset fail")
-    cover property(reset_p);
+    `ifdef COV
+    reset_c: cover property(reset_p);
+    `endif
 endinterface: my_pecell_interface

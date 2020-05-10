@@ -19,7 +19,14 @@ class my_pecell_subscriber extends uvm_component;
 
 
     //  Group: Variables
-    
+    bit[3:0] data_field0; 
+    bit[1:0] data_field1;
+    bit[1:0] data_field2;
+    bit pwrite;
+    bit[3:0] addr;
+    bit[4:0] waddr;
+    work_mode_e work_mode;
+    bit signed[7:0]wdata;
 
     //  Group: Ports
     uvm_analysis_imp_apb #(my_pecell_apb_transaction, my_pecell_subscriber) imp_apb;
@@ -28,6 +35,53 @@ class my_pecell_subscriber extends uvm_component;
 
     //  Group: Covergroup
     /*  note: Use covergroup.sample() instead of defining time event   */
+    covergroup reg_cg;
+        coverpoint addr{
+            bins reg_set_cycle[4] = {[0:3]};
+            bins reg_reuse = {4};
+            option.at_least = 2;
+        }
+
+        coverpoint data_field0;
+        coverpoint data_field1;
+        coverpoint data_field2{
+            bins reg_reuse[] = {2'b01, 2'b10};
+            bins others[] = {2'b00, 2'b11};
+        }
+
+        coverpoint pwrite;
+
+        reg_reuse_cross: cross addr, data_field2, data_field1, data_field0{
+            // bins reg_reuse_74 = binsof(addr.reg_reuse) && binsof(data_field0); 
+            // bins reg_reuse_32[] = binsof(addr.reg_reuse) && binsof(data_field1);
+            // bins reg_reuse_10[] = binsof(addr.reg_reuse) && binsof(data_field2.reg_reuse);
+            ignore_bins ignore = binsof(addr.reg_reuse) && binsof(data_field2.others);
+        }
+
+        addr_pwrite_cross: cross addr, pwrite;
+    endgroup
+
+    covergroup mem_cg;
+        coverpoint waddr iff(work_mode == WRITE){
+            option.at_least = 36;
+        }
+        coverpoint work_mode{
+            bins idle = {IDLE};
+            bins calculate = {CALCULATE};
+            bins read = {READ};
+            bins write = {WRITE};
+        }
+        coverpoint wdata iff(work_mode == WRITE){
+            option.auto_bin_max = 256;
+        }
+        // write_waddr_wdata_cross: cross waddr, wdata iff(work_mode == WRITE){
+        //     // bins write[] = binsof(waddr) && binsof(wdata) && binsof(work_mode.write);
+        //     // bins others = default;
+        //     ignore_bins ignore_read      = binsof(work_mode.read) && binsof(wdata) && binsof(waddr);
+        //     ignore_bins ignore_idle      = binsof(work_mode.idle) && binsof(wdata) && binsof(waddr);
+        //     ignore_bins ignore_calculate = binsof(work_mode.calculate) && binsof(wdata) && binsof(waddr);
+        // }
+    endgroup
 
 
     //  Group: Functions
@@ -39,6 +93,8 @@ class my_pecell_subscriber extends uvm_component;
     function new(string name = "my_pecell_subscriber", uvm_component parent);
         super.new(name, parent);
         // instantiate covergroup
+        reg_cg = new();
+        mem_cg = new();
 
     endfunction: new
 
@@ -150,10 +206,29 @@ endfunction: extract_phase
 /*----------------------------------------------------------------------------*/
 /* uvm_analysis_imp write functions                                           */
 function void my_pecell_subscriber::write_apb(input my_pecell_apb_transaction tr);
+    if(tbcfg.coverage_enable == 1) begin
+        data_field0 = tr.data[7:4];
+        data_field1 = tr.data[3:2];
+        data_field2 = tr.data[1:0];
+        pwrite = tr.kind;
+        addr = tr.addr;
+        reg_cg.sample();
+    end
 endfunction
 
 
 function void my_pecell_subscriber::write_inout(input my_pecell_inout_transaction tr);
+    if(tbcfg.coverage_enable == 1) begin
+        waddr = tr.addr;
+        work_mode = tr.work_mode;
+        if(work_mode == WRITE) begin
+            foreach(tr.data[i]) begin
+                wdata = tr.data[i];
+                mem_cg.sample();
+            end
+        end
+        else mem_cg.sample();
+    end
 endfunction
 
 

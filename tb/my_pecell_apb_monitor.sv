@@ -162,6 +162,7 @@ task my_pecell_apb_monitor::collect_wdata();
         tr.kind = my_pecell_apb_transaction::WRITE;
         ap.write(tr);
         to_ref_mdl_ap.write(tr);
+        to_sbr_ap.write(tr);
     end
 endtask: collect_wdata
 
@@ -175,6 +176,7 @@ task my_pecell_apb_monitor::collect_rdata();
         tr.addr = vif.apb_mon_cb.paddr;
         tr.kind = my_pecell_apb_transaction::READ;
         ap.write(tr);
+        to_sbr_ap.write(tr);
     end
 endtask: collect_rdata
 

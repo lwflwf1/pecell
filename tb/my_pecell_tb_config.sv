@@ -28,6 +28,9 @@ class my_pecell_tb_config extends uvm_object;
     //  Constructor: new
     function new(string name = "my_pecell_tb_config");
         super.new(name);
+        `ifdef COV
+        coverage_enable = 1;
+        `endif
     endfunction: new
 
     //  Function: do_copy

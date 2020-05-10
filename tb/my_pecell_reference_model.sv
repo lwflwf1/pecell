@@ -149,17 +149,29 @@ endtask: shutdown_phase
 
 task my_pecell_reference_model::run_phase(uvm_phase phase);
     my_pecell_inout_transaction tr;
+    bit reset = 0;
     fork
         forever begin
+            reset = 0;
             wait(in_vector_q.size() > 0);
             // if (in_vector_q.size() > 0) begin
             tr = my_pecell_inout_transaction::type_id::create("tr");
             tr.data = new[33];
             calculate(tr);
-            tr_id++;
-            tr.id = tr_id;
-            to_scb_ap.write(tr);
-            `uvm_info(get_type_name(), "send one packet", UVM_MEDIUM)
+            fork : rst
+                begin
+                    wait(vif.rst_n == 'b0);
+                    reset = 1;
+                end
+                @(negedge vif.rdata_last);
+            join_any
+            disable rst;
+            if(reset == 0) begin
+                tr_id++;
+                tr.id = tr_id;
+                to_scb_ap.write(tr);
+                `uvm_info(get_type_name(), "send one packet", UVM_MEDIUM)
+            end
             // end
             // else @(posedge vif.clk);
         end

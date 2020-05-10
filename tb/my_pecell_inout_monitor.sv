@@ -126,40 +126,38 @@ endtask: shutdown_phase
 
 
 task my_pecell_inout_monitor::run_phase(uvm_phase phase);
-    my_pecell_inout_transaction tr;
+    my_pecell_inout_transaction tr_w;
+    my_pecell_inout_transaction tr_r;
     wait(vif.rst_n == 1);
     fork
         forever begin
-            tr = my_pecell_inout_transaction::type_id::create("tr");
-            tr.data = new[33];
+            tr_r = my_pecell_inout_transaction::type_id::create("tr_r");
+            tr_r.data = new[33];
             fork
                 begin : collect_rdata
-                    collect_rdata_pkt(tr);
+                    collect_rdata_pkt(tr_r);
                     disable rst_listener_rdata;
+                    tr_id++;
+                    tr_r.id = tr_id;
+                    to_scb_ap.write(tr_r);
                     `uvm_info({get_type_name(), ": rdata"}, "collect one packet", UVM_MEDIUM)
                 end
                 begin : rst_listener_rdata
                     wait(vif.rst_n == 'b0);
                     disable collect_rdata;
-                    tr.exception = 1;
                     wait(vif.rst_n == 'b1);
                 end
             join
-            if(vif.inout_mon_cb.work_mode inside {CALCULATE, READ}) begin
-                tr_id++;
-                tr.id = tr_id;
-                to_scb_ap.write(tr);
-            end
         end
         forever begin
-            tr = my_pecell_inout_transaction::type_id::create("tr");
-            tr.data = new[tbcfg.wdata_len];
+            tr_w = my_pecell_inout_transaction::type_id::create("tr_w");
+            tr_w.data = new[tbcfg.wdata_len];
             fork
                 begin : collect_wdata
-                    collect_wdata_pkt(tr);
+                    collect_wdata_pkt(tr_w);
                     disable rst_listener_wdata;
-                    to_ref_mdl_ap.write(tr);
-                    to_sbr_ap.write(tr);
+                    to_ref_mdl_ap.write(tr_w);
+                    to_sbr_ap.write(tr_w);
                     `uvm_info({get_type_name(), ": wdata"}, "collect one packet", UVM_MEDIUM)
                 end
                 begin : rst_listener_wdata
@@ -191,13 +189,12 @@ endfunction: extract_phase
 /*  Other Class Functions and Tasks                                           */ 
 /*----------------------------------------------------------------------------*/
 task my_pecell_inout_monitor::collect_rdata_pkt(inout my_pecell_inout_transaction tr);
-    @(vif.inout_mon_cb);
     for (int i = 0; i < 33;) begin
+        @(vif.inout_mon_cb);
         if (vif.inout_mon_cb.rdata_valid == 'b1 && vif.inout_mon_cb.rdata_busy == 'b0) begin
             tr.data[i] = vif.inout_mon_cb.rdata;
             i++;
         end
-        @(vif.inout_mon_cb);
     end
 endtask: collect_rdata_pkt
 
@@ -209,9 +206,7 @@ task my_pecell_inout_monitor::collect_wdata_pkt(inout my_pecell_inout_transactio
             tr.work_mode = work_mode_e'(vif.inout_mon_cb.work_mode);
             break;
         end
-        else begin
-            @(vif.inout_mon_cb);
-        end
+        else @(vif.inout_mon_cb);
     end
     if (tr.work_mode != IDLE) begin
         for (int i = 0; i < tbcfg.wdata_len;) begin

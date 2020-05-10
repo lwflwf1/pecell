@@ -206,7 +206,6 @@ endfunction
 /*  Other Class Functions and Tasks                                           */
 /*----------------------------------------------------------------------------*/
 function void my_pecell_scoreboard::compare(input my_pecell_inout_transaction act, input my_pecell_inout_transaction exp);
-    if (act.exception == 1) return;
     if (act.id != exp.id) begin
         `uvm_fatal(get_type_name(), $sformatf("transaction id mismatch!!!\nact.id = %0d; exp_id = %0d\n", act.id, exp.id))
     end

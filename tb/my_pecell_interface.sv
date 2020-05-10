@@ -103,8 +103,10 @@ interface my_pecell_interface
         @(posedge clk) $fell(rst_n) |-> ( (pready == 'b1) && (prdata == 8'b0) && (wdata_busy == 'b1) && (rdata == 8'b0) && (rdata_valid == 'b0) && (rdata_last == 'b0) && (pe_busy == 'b0))[*1:$] ##0 $rose(rst_n);
     endproperty
 
+    `ifndef RESET_CAL
     rlast_a: assert property(rlast_p) else `uvm_error("assert", "assert rlast fail")
-    reset_a: assert property(reset_p) else `uvm_error("assert", "assert reset fail")
     cover property(rlast_p);
+    `endif
+    reset_a: assert property(reset_p) else `uvm_error("assert", "assert reset fail")
     cover property(reset_p);
 endinterface: my_pecell_interface

@@ -1,9 +1,9 @@
 ///////////////////////////////////////////////
-// file name   : my_case47.sv
+// file name   : my_case48.sv
 // create time : 2020-5-9
 // author      : Gong Yingfan
 // version     : v1.0
-// cescript    : my_case47
+// cescript    : my_case48
 // log         : no
 ///////////////////////////////////////////////
 
@@ -36,14 +36,17 @@ endclass: my_pecell_apb_sequence
 
 
 task my_pecell_apb_sequence::body();
+    my_pecell_apb_transaction tr;
     if (!uvm_config_db#(my_pecell_register_model)::get(null, get_full_name(), "regmdl", m_regmdl)) begin
         `uvm_fatal(get_type_name(), "cannot get regmdl")
     end
+    tr = my_pecell_apb_transaction::type_id::create("tr");
+    tr.randomize() with {addr == 'h4;};
     m_regmdl.reg_set_cycle0.write(status, 1, UVM_FRONTDOOR, .parent(this));
     m_regmdl.reg_set_cycle1.write(status, 0, UVM_FRONTDOOR, .parent(this));
     m_regmdl.reg_set_cycle2.write(status, 0, UVM_FRONTDOOR, .parent(this));
     m_regmdl.reg_set_cycle3.write(status, 0, UVM_FRONTDOOR, .parent(this));
-    m_regmdl.reg_reuse.write(status, 'hf1, UVM_FRONTDOOR, .parent(this));
+    m_regmdl.reg_reuse.write(status, tr.data, UVM_FRONTDOOR, .parent(this));
 endtask: body
 
 
@@ -58,6 +61,7 @@ class my_pecell_inout_sequence extends uvm_sequence;
     my_pecell_inout_transaction tr_idle;
     int input_data_num = 36;
     bit write = 1;
+    bit idle = 0;
     
 
     //  Group: Functions
@@ -76,54 +80,38 @@ task my_pecell_inout_sequence::body();
     int gap;
     int cycle;
     int rst_cycle;
-    tr = my_pecell_inout_transaction::type_id::create("tr");
-    tr_idle = my_pecell_inout_transaction::type_id::create("tr_idle");
+    tr = my_pecell_inout_transaction::type_id::create("tr_idle");
     if(write == 1) begin
-        fork
-            begin
-                for(int i = 0; i < 32; i++) begin
-                    start_item(tr);
-                    assert(tr.randomize() with {
-                        work_mode == WRITE;
-                        foreach (wdata_interval_cycle[i]) wdata_interval_cycle[i] == 0;
-                        cvalid_after_csn == 1;
-                        csn_undo_cycle == 0;
-                    });
-                    finish_item(tr);
-                end
-            end
-            begin
-                forever begin
-                    std::randomize(rst_cycle) with {rst_cycle inside {[500:1000]};};
-                    repeat(rst_cycle) #(`PERIOD);
-                    #1;
-                    my_pecell_top.m_if.rst_n = ~my_pecell_top.m_if.rst_n;
-                end
-            end
-        join_any
-        disable fork;
-    end
-    else begin
-        for(int i = 0; i < input_data_num; i++) begin
+        for(int i = 0; i < 32; i++) begin
             start_item(tr);
-            tr.randomize() with {
-                work_mode == READ;
+            assert(tr.randomize() with {
+                work_mode == WRITE;
                 foreach (wdata_interval_cycle[i]) wdata_interval_cycle[i] == 0;
-                foreach(data[j]) data[j] == 0; 
                 cvalid_after_csn == 1;
                 csn_undo_cycle == 0;
-            };
-            tr.data[tr.read_index] = 1;
+            });
             finish_item(tr);
         end
+    end
+    else if(idle == 0)begin
         start_item(tr);
-        assert(tr.randomize() with {
-            work_mode == IDLE;
-            wdata_len == 1;
+        tr.randomize() with {
+            work_mode == CALCULATE;
             foreach (wdata_interval_cycle[i]) wdata_interval_cycle[i] == 0;
             cvalid_after_csn == 1;
             csn_undo_cycle == 0;
-        });
+        };
+        finish_item(tr);
+    end
+    else begin
+        start_item(tr);
+        tr.randomize() with {
+            work_mode == idle;
+            foreach (wdata_interval_cycle[i]) wdata_interval_cycle[i] == 0;
+            wdata_len == 1;
+            cvalid_after_csn == 1;
+            csn_undo_cycle == 0;
+        };
         finish_item(tr);
     end
 endtask: body
@@ -173,14 +161,33 @@ task my_pecell_virtual_sequence::body();
     --------------------------------------------------------------*/
 
     /* note: Use tb_config to control whether to start a sequence */
+    int rst_cycle;
+    bit conf_reg;
     m_apb_seq = my_pecell_apb_sequence::type_id::create("m_apb_seq");
     m_inout_seq = my_pecell_inout_sequence::type_id::create("m_inout_seq");
     m_apb_seq.start(p_sequencer.m_pecell_apb_sqr);
     m_inout_seq.start(p_sequencer.m_pecell_inout_sqr);
-    wait(my_pecell_top.m_if.pe_busy == 'b0);
-    m_apb_seq.start(p_sequencer.m_pecell_apb_sqr);
     m_inout_seq.write = 0;
-    m_inout_seq.start(p_sequencer.m_pecell_inout_sqr);
+    fork
+        begin
+            forever begin
+                std::randomize(rst_cycle) with {rst_cycle inside {[500:1000]};};
+                repeat(rst_cycle) #(`PERIOD);
+                #1;
+                my_pecell_top.m_if.rst_n = ~my_pecell_top.m_if.rst_n;
+                // if(my_pecell_top.m_if.rst_n == 'b1) begin
+                //     m_apb_seq.start(p_sequencer.m_pecell_apb_sqr);
+                //     uvm_config_db#(bit)::set(null, "uvm_test_top.m_env.m_pecell_inout_agt.m_drv", "conf_reg", conf_reg);
+                // end
+            end
+        end
+        begin
+            repeat(100) m_inout_seq.start(p_sequencer.m_pecell_inout_sqr);
+            m_inout_seq.idle = 1;
+            m_inout_seq.start(p_sequencer.m_pecell_inout_sqr);
+        end
+    join_any
+    disable fork;
 endtask: body
 
 
@@ -208,10 +215,10 @@ endtask: post_start
 
 
 
-//  Class: my_case47
+//  Class: my_case48
 //
-class my_case47 extends my_pecell_base_test;
-    `uvm_component_utils(my_case47)
+class my_case48 extends my_pecell_base_test;
+    `uvm_component_utils(my_case48)
 
     //  Group: Config
     logic [6:0] pe_id;
@@ -224,7 +231,7 @@ class my_case47 extends my_pecell_base_test;
     //  Group: Functions
 
     //  Constructor: new
-    function new(string name = "my_case47", uvm_component parent);
+    function new(string name = "my_case48", uvm_component parent);
         super.new(name, parent);
     endfunction: new
 
@@ -261,13 +268,13 @@ class my_case47 extends my_pecell_base_test;
     //  Function: report_phase
     extern virtual function void report_phase(uvm_phase phase);
     
-endclass: my_case47
+endclass: my_case48
 
 
 /*----------------------------------------------------------------------------*/
 /*  UVM Build Phases                                                          */
 /*----------------------------------------------------------------------------*/
-function void my_case47::build_phase(uvm_phase phase);
+function void my_case48::build_phase(uvm_phase phase);
     /*  note: Do not call super.build_phase() from any class that is extended from an UVM base class!  */
     /*  For more information see UVM Cookbook v1800.2 p.503  */
 
@@ -284,7 +291,7 @@ function void my_case47::build_phase(uvm_phase phase);
 endfunction: build_phase
 
 
-function void my_case47::connect_phase(uvm_phase phase);
+function void my_case48::connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     // override report verbosity level, default is UVM_HIGH
     m_env.set_report_verbosity_level_hier(UVM_LOW);
@@ -295,7 +302,7 @@ function void my_case47::connect_phase(uvm_phase phase);
 endfunction: connect_phase
 
 
-function void my_case47::end_of_elaboration_phase(uvm_phase phase);
+function void my_case48::end_of_elaboration_phase(uvm_phase phase);
     super.end_of_elaboration_phase(phase);
 endfunction: end_of_elaboration_phase
 
@@ -303,32 +310,32 @@ endfunction: end_of_elaboration_phase
 /*----------------------------------------------------------------------------*/
 /*  UVM Run Phases                                                            */
 /*----------------------------------------------------------------------------*/
-function void my_case47::start_of_simulation_phase(uvm_phase phase);
+function void my_case48::start_of_simulation_phase(uvm_phase phase);
     super.start_of_simulation_phase(phase);
 endfunction: start_of_simulation_phase
 
 
-task my_case47::reset_phase(uvm_phase phase);
+task my_case48::reset_phase(uvm_phase phase);
     super.reset_phase(phase);
 endtask: reset_phase
 
 
-task my_case47::configure_phase(uvm_phase phase);
+task my_case48::configure_phase(uvm_phase phase);
     super.configure_phase(phase);
 endtask: configure_phase
 
 
-task my_case47::main_phase(uvm_phase phase);
+task my_case48::main_phase(uvm_phase phase);
     super.main_phase(phase);
 endtask: main_phase
 
 
-task my_case47::shutdown_phase(uvm_phase phase);
+task my_case48::shutdown_phase(uvm_phase phase);
     super.shutdown_phase(phase);
 endtask: shutdown_phase
 
 
-task my_case47::run_phase(uvm_phase phase);
+task my_case48::run_phase(uvm_phase phase);
     super.run_phase(phase);
     // start vseq on vsqr
     m_vseq.starting_phase = phase;
@@ -339,12 +346,12 @@ endtask: run_phase
 /*----------------------------------------------------------------------------*/
 /*  UVM Cleanup Phases                                                        */
 /*----------------------------------------------------------------------------*/
-function void my_case47::report_phase(uvm_phase phase);
+function void my_case48::report_phase(uvm_phase phase);
     super.report_phase(phase);
 endfunction: report_phase
 
 
-function void my_case47::extract_phase(uvm_phase phase);
+function void my_case48::extract_phase(uvm_phase phase);
     super.extract_phase(phase);
 endfunction: extract_phase
 

@@ -210,7 +210,8 @@ function void my_pecell_subscriber::write_apb(input my_pecell_apb_transaction tr
         data_field0 = tr.data[7:4];
         data_field1 = tr.data[3:2];
         data_field2 = tr.data[1:0];
-        pwrite = tr.kind;
+        pwrite = (tr.kind == my_pecell_apb_transaction::WRITE)? 1'b1:1'b0;
+        if(pwrite == 0) `uvm_info(get_type_name(), "pwrite = 0", UVM_LOW)
         addr = tr.addr;
         reg_cg.sample();
     end

@@ -129,9 +129,10 @@ endtask: shutdown_phase
 
 task my_pecell_apb_monitor::run_phase(uvm_phase phase);
     wait(vif.rst_n == 1);
-    forever begin
-        collect_wdata();
-    end
+    fork
+        forever collect_wdata();
+        forever collect_rdata();
+    join
 endtask: run_phase
 
 
@@ -175,7 +176,7 @@ task my_pecell_apb_monitor::collect_rdata();
         tr.data = vif.apb_mon_cb.prdata;
         tr.addr = vif.apb_mon_cb.paddr;
         tr.kind = my_pecell_apb_transaction::READ;
-        ap.write(tr);
+        // ap.write(tr);
         to_sbr_ap.write(tr);
     end
 endtask: collect_rdata

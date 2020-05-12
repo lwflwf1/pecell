@@ -100,7 +100,7 @@ task my_pecell_apb_sequence::body();
         `uvm_fatal(get_type_name(), "cannot get regmdl")
     end
     tr = my_pecell_apb_transaction::type_id::create("tr");
-    for (int i=0; i<1000; i++) begin
+    for (int i=0; i<10000; i++) begin
         std::randomize(cycle) with {cycle inside {[0:10]};};
         repeat(cycle) #(`PERIOD);
         tr.randomize();

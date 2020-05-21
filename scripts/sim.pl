@@ -29,7 +29,7 @@ sub main {
             $seed = $_;
         }
         elsif (/urg/){&urg; return;}
-        elsif (/clear/){&clear("cov", "log"); return;}
+        elsif (/clear/){&clear("cov", "log", "fsdb"); return;}
         else {die "invalid argument:'$_'\nuse './scripts/sim.pl help' for help\n";}
     }
     if (!@cases) {die "case not set!\n";}
@@ -89,7 +89,7 @@ sub main {
         open $logfile, "<", $log or die "can not open $logfile:$!\n";
         $case_fail{$case} = "pass"; 
         while (<$logfile>) {
-            if (/uvm_(?:error|fatal)\s*:\s*(\d+)/i and ($1 > 0)) {
+            if (/uvm_(?:error|fatal)\s*:\s*(\d+)|\d+\s*error/i and ($1 > 0)) {
                 $case_fail{$case} = "fail";
                 last;
             }

@@ -35,14 +35,15 @@ endclass: my_pecell_apb_sequence
 
 task my_pecell_apb_sequence::body();
     bit set_reg_done = 0;
+    my_pecell_apb_transaction tr;
+    tr = my_pecell_apb_transaction::type_id::create("tr");
     if (!uvm_config_db#(my_pecell_register_model)::get(null, get_full_name(), "regmdl", m_regmdl)) begin
         `uvm_fatal(get_type_name(), "cannot get regmdl")
     end
     value = '{5{0}};
     value[0] = 'b1;
-    std::randomize(value[4][7:3]) with {value[4][7:3] inside {[17:31]};};
-    std::randomize(value[4][2]);
-    value[4][1:0] = 'b01;
+    tr.randomize() with {data[7:3] inside {[17:31]}; data[1:0] == 'b01;};
+    value[4] = tr.data;
     m_regmdl.reg_set_cycle0.write(status, value[0], UVM_FRONTDOOR, .parent(this));
     m_regmdl.reg_set_cycle1.write(status, value[1], UVM_FRONTDOOR, .parent(this));
     m_regmdl.reg_set_cycle2.write(status, value[2], UVM_FRONTDOOR, .parent(this));

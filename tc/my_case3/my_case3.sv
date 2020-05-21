@@ -19,7 +19,7 @@ class my_pecell_apb_sequence extends uvm_sequence;
     //  Group: Variables
     my_pecell_register_model m_regmdl;
     uvm_status_e status;
-    uvm_reg_data_t value[0:4];
+    rand uvm_reg_data_t value[0:4];
 
     //  Group: Functions
 
@@ -41,7 +41,7 @@ task my_pecell_apb_sequence::body();
     value = '{5{0}};
     value[0] = 'b1;
     std::randomize(value[4][7:3]) with {value[4][7:3] inside {[19:22]};};
-    value[4][2:0] = 'b001 
+    value[4][2:0] = 'b001; 
     m_regmdl.reg_set_cycle0.write(status, value[0], UVM_FRONTDOOR, .parent(this));
     m_regmdl.reg_set_cycle1.write(status, value[1], UVM_FRONTDOOR, .parent(this));
     m_regmdl.reg_set_cycle2.write(status, value[2], UVM_FRONTDOOR, .parent(this));

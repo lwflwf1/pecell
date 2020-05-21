@@ -19,7 +19,7 @@ class my_pecell_apb_sequence extends uvm_sequence;
     //  Group: Variables
     my_pecell_register_model m_regmdl;
     uvm_status_e status;
-    uvm_reg_data_t value[0:4];
+    rand uvm_reg_data_t value[0:4];
 
     //  Group: Functions
 

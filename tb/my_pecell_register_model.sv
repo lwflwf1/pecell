@@ -37,7 +37,7 @@ class register_reuse extends uvm_reg;
 
     //  Group: Variables
     rand uvm_reg_field output_config;
-    rand uvm_reg_field work_mode;
+    rand uvm_reg_field reserved;
     rand uvm_reg_field rram_set;
     
 
@@ -50,7 +50,7 @@ class register_reuse extends uvm_reg;
 
     virtual function void build();
         output_config = uvm_reg_field::type_id::create("output_config");
-        work_mode = uvm_reg_field::type_id::create("work_mode");
+        reserved = uvm_reg_field::type_id::create("reserved");
         rram_set = uvm_reg_field::type_id::create("rram_set");
         output_config.configure(this, 5, 3, "RW", 0, 5'h6, 1, 1, 0);
         reserved.configure(this, 1, 2, "RW", 0, 1'h0, 1, 1, 0);
@@ -67,7 +67,10 @@ class my_pecell_register_model extends uvm_reg_block;
     `uvm_object_utils(my_pecell_register_model);
 
     //  Group: Variables
-    rand register_set_cycle reg_set_cycle[4];
+    rand register_set_cycle reg_set_cycle0;
+    rand register_set_cycle reg_set_cycle1;
+    rand register_set_cycle reg_set_cycle2;
+    rand register_set_cycle reg_set_cycle3;
     rand register_reuse reg_reuse;
 
     uvm_reg_map map;
@@ -81,15 +84,22 @@ class my_pecell_register_model extends uvm_reg_block;
     endfunction: new
 
     virtual function void build();
-        foreach(reg_set_cycle[i]) begin
-            reg_set_cycle[i] = register_set_cycle::type_id::create($sformatf("reg_set_cycle%d", i));
-            reg_set_cycle[i].configure(this, null, "");
-            reg_set_cycle[i].build();
-        end
-        reg_set_cycle[0].field.configure(this, 8, 0, "RW", 0, 8'h50, 1, 1, 1);
-        reg_set_cycle[1].field.configure(this, 8, 0, "RW", 0, 8'hc3, 1, 1, 1);
-        reg_set_cycle[2].field.configure(this, 8, 0, "RW", 0, 8'h0, 1, 1, 1);
-        reg_set_cycle[3].field.configure(this, 8, 0, "RW", 0, 8'h0, 1, 1, 1);
+        reg_set_cycle0 = register_set_cycle::type_id::create("reg_set_cycle0");
+        reg_set_cycle0.configure(this, null, "");
+        reg_set_cycle0.build();
+        reg_set_cycle1 = register_set_cycle::type_id::create("reg_set_cycle1");
+        reg_set_cycle1.configure(this, null, "");
+        reg_set_cycle1.build();
+        reg_set_cycle2 = register_set_cycle::type_id::create("reg_set_cycle2");
+        reg_set_cycle2.configure(this, null, "");
+        reg_set_cycle2.build();
+        reg_set_cycle3 = register_set_cycle::type_id::create("reg_set_cycle3");
+        reg_set_cycle3.configure(this, null, "");
+        reg_set_cycle3.build();
+        reg_set_cycle0.field.configure(reg_set_cycle0, 8, 0, "RW", 0, 8'h50, 1, 1, 1);
+        reg_set_cycle1.field.configure(reg_set_cycle1, 8, 0, "RW", 0, 8'hc3, 1, 1, 1);
+        reg_set_cycle2.field.configure(reg_set_cycle2, 8, 0, "RW", 0, 8'h0, 1, 1, 1);
+        reg_set_cycle3.field.configure(reg_set_cycle3, 8, 0, "RW", 0, 8'h0, 1, 1, 1);
         reg_reuse = register_reuse::type_id::create("reg_reuse");
         reg_reuse.configure(this, null, "");
         reg_reuse.build();

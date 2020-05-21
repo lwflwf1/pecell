@@ -13,7 +13,7 @@ class my_pecell_reference_model extends uvm_component;
     `uvm_component_utils(my_pecell_reference_model)
     `uvm_analysis_imp_decl(_apb)
     `uvm_analysis_imp_decl(_inout)
-    typedef logic signed [`WID_BUS-1:0] in_vector_t[35:0];
+    typedef logic signed [`WID_BUS-1:0] in_vector_t[0:35];
     
 
     //  Group: Config
@@ -235,93 +235,91 @@ task my_pecell_reference_model::calculate(ref my_pecell_inout_transaction tr);
     // end
     tr.data[0] = pe_id;
     foreach (weight[i]) begin
-        foreach ( weight[,j] ) begin
-            rdata_tmp += weight[i][j] * vector[j]; 
-        end
+        rdata_tmp = 0;
+        foreach ( weight[,j] ) rdata_tmp += weight[i][j] * vector[j];
         case (reg_reuse[7:3])
-            4'd0: tr.data[i+1] = {rdata_tmp[31], rdata_tmp[22:16]};
-            4'd1: begin
+            5'd0: tr.data[i+1] = {rdata_tmp[31], rdata_tmp[22:16]};
+            5'd1: begin
                 if(rdata_tmp[23:22] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
                 else if(rdata_tmp[23:22] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
                 else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[21:15]};
             end
-            4'd2: begin
+            5'd2: begin
                 if(rdata_tmp[23:21] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
                 else if(rdata_tmp[23:21] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
                 else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[20:14]};
             end
-            4'd3: begin
+            5'd3: begin
                 if(rdata_tmp[23:20] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
                 else if(rdata_tmp[23:20] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
                 else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[19:13]};
             end
-            4'd4: begin
+            5'd4: begin
                 if(rdata_tmp[23:19] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
                 else if(rdata_tmp[23:19] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
                 else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[18:12]};
             end
-            4'd5: begin
+            5'd5: begin
                 if(rdata_tmp[23:18] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
                 else if(rdata_tmp[23:18] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
                 else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[17:11]};
             end
-            4'd6: begin
+            5'd6: begin
                 if(rdata_tmp[23:17] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
                 else if(rdata_tmp[23:17] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
                 else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[16:10]};
             end
-            4'd7: begin
+            5'd7: begin
                 if(rdata_tmp[23:16] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
                 else if(rdata_tmp[23:16] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
                 else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[15:9]};
             end
-            4'd8: begin
+            5'd8: begin
                 if(rdata_tmp[23:15] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
                 else if(rdata_tmp[23:15] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
                 else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[14:8]};
             end
-            4'd9: begin
+            5'd9: begin
                 if(rdata_tmp[23:14] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
                 else if(rdata_tmp[23:14] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
                 else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[13:7]};
             end
-            4'd10: begin
+            5'd10: begin
                 if(rdata_tmp[23:13] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
                 else if(rdata_tmp[23:13] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
                 else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[12:6]};
             end
-            4'd11: begin
+            5'd11: begin
                 if(rdata_tmp[23:12] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
                 else if(rdata_tmp[23:12] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
                 else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[11:5]};
             end
-            4'd12: begin
+            5'd12: begin
                 if(rdata_tmp[23:11] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
                 else if(rdata_tmp[23:11] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
                 else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[10:4]};
             end
-            4'd13: begin
+            5'd13: begin
                 if(rdata_tmp[23:10] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
                 else if(rdata_tmp[23:10] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
                 else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[9:3]};
             end
-            4'd14: begin
+            5'd14: begin
                 if(rdata_tmp[23:9] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
                 else if(rdata_tmp[23:9] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
                 else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[8:2]};
             end
-            4'd15: begin
+            5'd15: begin
                 if(rdata_tmp[23:8] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
                 else if(rdata_tmp[23:8] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
                 else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[7:1]};
             end
-            4'd16: begin
+            5'd16: begin
                 if(rdata_tmp[23:7] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
                 else if(rdata_tmp[23:7] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
                 else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[6:0]};
             end
             default: tr.data[i+1] = rdata_tmp[7:0];
         endcase
-        rdata_tmp = 0;
     end
 endtask: calculate

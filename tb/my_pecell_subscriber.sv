@@ -19,8 +19,8 @@ class my_pecell_subscriber extends uvm_component;
 
 
     //  Group: Variables
-    bit[3:0] data_field0; 
-    bit[1:0] data_field1;
+    bit[4:0] data_field0; 
+    bit data_field1;
     bit[1:0] data_field2;
     bit pwrite;
     bit[3:0] addr;
@@ -42,23 +42,21 @@ class my_pecell_subscriber extends uvm_component;
             option.at_least = 2;
         }
 
-        coverpoint data_field0;
-        coverpoint data_field1;
+        coverpoint data_field0{
+            bins read[5] = {17, 18, [19:29], 30, 31};
+            bins cal[] = {[0:16]};
+        }
         coverpoint data_field2{
             bins reg_reuse[] = {2'b01, 2'b10};
-            bins others[] = {2'b00, 2'b11};
+            illegal_bins illegle_reg_reuse = {2'b00, 2'b11};
         }
 
         coverpoint pwrite;
 
-        reg_reuse_cross: cross addr, data_field2, data_field1, data_field0{
-            // bins reg_reuse_74 = binsof(addr.reg_reuse) && binsof(data_field0); 
-            // bins reg_reuse_32[] = binsof(addr.reg_reuse) && binsof(data_field1);
-            // bins reg_reuse_10[] = binsof(addr.reg_reuse) && binsof(data_field2.reg_reuse);
-            ignore_bins ignore = binsof(addr.reg_reuse) && binsof(data_field2.others);
-        }
+        reg_reuse_cross: cross addr, data_field2, data_field1, data_field0;
 
         addr_pwrite_cross: cross addr, pwrite;
+
     endgroup
 
     covergroup mem_cg;
@@ -207,8 +205,8 @@ endfunction: extract_phase
 /* uvm_analysis_imp write functions                                           */
 function void my_pecell_subscriber::write_apb(input my_pecell_apb_transaction tr);
     if(tbcfg.coverage_enable == 1) begin
-        data_field0 = tr.data[7:4];
-        data_field1 = tr.data[3:2];
+        data_field0 = tr.data[7:3];
+        data_field1 = tr.data[2];
         data_field2 = tr.data[1:0];
         pwrite = (tr.kind == my_pecell_apb_transaction::WRITE)? 1'b1:1'b0;
         addr = tr.addr;

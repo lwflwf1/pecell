@@ -40,7 +40,9 @@ task my_pecell_apb_sequence::body();
     end
     value = '{5{0}};
     value[0] = 'b1;
-    value[4] = 'hf1;
+    value[4][7:3] = 'd30;
+    std::randomize( value[4][2] )
+    value[4][1:0] = 'b01 
     m_regmdl.reg_set_cycle0.write(status, value[0], UVM_FRONTDOOR, .parent(this));
     m_regmdl.reg_set_cycle1.write(status, value[1], UVM_FRONTDOOR, .parent(this));
     m_regmdl.reg_set_cycle2.write(status, value[2], UVM_FRONTDOOR, .parent(this));

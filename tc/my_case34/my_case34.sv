@@ -40,7 +40,7 @@ task my_pecell_apb_sequence::body();
         `uvm_fatal(get_type_name(), "cannot get regmdl")
     end
     tr = my_pecell_apb_transaction::type_id::create("tr");
-    tr.randomize() with {data[7:4] == 'he; addr == 'h4;};
+    tr.randomize() with {data[7:3] == 'he; addr == 'h4;};
     value = '{5{0}};
     value[0] = 'b1;
     value[4] = tr.data;

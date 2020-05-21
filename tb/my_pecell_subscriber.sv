@@ -48,7 +48,7 @@ class my_pecell_subscriber extends uvm_component;
         }
         coverpoint data_field2{
             bins reg_reuse[] = {2'b01, 2'b10};
-            illegal_bins illegle_reg_reuse = {2'b00, 2'b11};
+            illegal_bins illegle_reg_reuse = {2'b00, 2'b11} iff(addr == 'h4);
         }
 
         coverpoint pwrite;

@@ -16,7 +16,7 @@ class my_pecell_apb_transaction extends uvm_sequence_item;
     typedef enum bit {READ, WRITE} kind_e;
 
     //  Group: Variables
-    randc logic [3:0]addr;
+    randc logic [7:0]addr;
     rand logic [7:0]data;
     rand kind_e kind;
     rand logic [6:0]pe_id;

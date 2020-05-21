@@ -30,7 +30,7 @@
 `endif
 
 `ifndef WID_ACC
-`define WID_ACC 22
+`define WID_ACC 24
 `endif
 
 `ifndef PE_ID

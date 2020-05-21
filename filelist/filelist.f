@@ -28,6 +28,5 @@
 ./rtl/pe_cell_reg_inf.v
 ./rtl/pe_cell_contrl.v
 ./rtl/pe_rram.sv
-./rtl/reg_rc.v
 ./rtl/ripple_counter.v
 ./rtl/reg_rw.v

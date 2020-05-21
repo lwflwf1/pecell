@@ -1,1 +1,0 @@
-/home/wyc/Project/To_Vrf/rtl/reg_rc.v

@@ -23,7 +23,7 @@ interface my_pecell_interface
     logic rst_n;
     logic [6:0]pe_id;
     logic psel;
-    logic [3:0]paddr;
+    logic [7:0]paddr;
     logic pwrite;
     logic [7:0]pwdata;
     logic penable;

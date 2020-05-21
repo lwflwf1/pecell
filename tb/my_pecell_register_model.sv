@@ -75,8 +75,8 @@ class register_reuse extends uvm_reg;
         output_config = uvm_reg_field::type_id::create("output_config");
         work_mode = uvm_reg_field::type_id::create("work_mode");
         rram_set = uvm_reg_field::type_id::create("rram_set");
-        output_config.configure(this, 4, 4, "RW", 0, 4'h6, 1, 1, 0);
-        work_mode.configure(this, 2, 2, "RW", 0, 2'h0, 1, 1, 0);
+        output_config.configure(this, 5, 3, "RW", 0, 4'h6, 1, 1, 0);
+        reserve.configure(this, 1, 2, "RW", 0, 2'h0, 1, 1, 0);
         rram_set.configure(this, 2, 0, "RW", 0, 2'h1, 1, 1, 0);
     endfunction
 

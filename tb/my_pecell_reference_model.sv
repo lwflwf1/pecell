@@ -202,7 +202,7 @@ endfunction: extract_phase
 /* uvm_analysis_imp write functions                                           */
 function void my_pecell_reference_model::write_apb(input my_pecell_apb_transaction tr);
     if (tr.addr == 'h4 && vif.rst_n == 'b1) reg_reuse = tr.data;
-    else if(vif.rst_n == 'b0) reg_reuse = 'h61;
+    else if(vif.rst_n == 'b0) reg_reuse = 'b00110001;
 endfunction
 
 
@@ -238,22 +238,88 @@ task my_pecell_reference_model::calculate(ref my_pecell_inout_transaction tr);
         foreach ( weight[,j] ) begin
             rdata_tmp += weight[i][j] * vector[j]; 
         end
-        case (reg_reuse[7:4])
-            4'd0: tr.data[i+1] = {rdata_tmp[31], rdata_tmp[20:14]};
-            4'd1: tr.data[i+1] = {rdata_tmp[31], rdata_tmp[19:13]};
-            4'd2: tr.data[i+1] = {rdata_tmp[31], rdata_tmp[18:12]};
-            4'd3: tr.data[i+1] = {rdata_tmp[31], rdata_tmp[17:11]};
-            4'd4: tr.data[i+1] = {rdata_tmp[31], rdata_tmp[16:10]};
-            4'd5: tr.data[i+1] = {rdata_tmp[31], rdata_tmp[15:9]};
-            4'd6: tr.data[i+1] = {rdata_tmp[31], rdata_tmp[14:8]};
-            4'd7: tr.data[i+1] = {rdata_tmp[31], rdata_tmp[13:7]};
-            4'd8: tr.data[i+1] = {rdata_tmp[31], rdata_tmp[12:6]};
-            4'd9: tr.data[i+1] = {rdata_tmp[31], rdata_tmp[11:5]};
-            4'd10: tr.data[i+1] = {rdata_tmp[31], rdata_tmp[10:4]};
-            4'd11: tr.data[i+1] = {rdata_tmp[31], rdata_tmp[9:3]};
-            4'd12: tr.data[i+1] = {rdata_tmp[31], rdata_tmp[8:2]};
-            4'd13: tr.data[i+1] = {rdata_tmp[31], rdata_tmp[7:1]};
-            4'd14: tr.data[i+1] = {rdata_tmp[31], rdata_tmp[6:0]};
+        case (reg_reuse[7:3])
+            4'd0: tr.data[i+1] = {rdata_tmp[31], rdata_tmp[22:16]};
+            4'd1: begin
+                if(rdata_tmp[23:22] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
+                else if(rdata_tmp[23:22] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
+                else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[21:15]};
+            end
+            4'd2: begin
+                if(rdata_tmp[23:21] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
+                else if(rdata_tmp[23:21] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
+                else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[20:14]};
+            end
+            4'd3: begin
+                if(rdata_tmp[23:20] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
+                else if(rdata_tmp[23:20] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
+                else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[19:13]};
+            end
+            4'd4: begin
+                if(rdata_tmp[23:19] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
+                else if(rdata_tmp[23:19] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
+                else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[18:12]};
+            end
+            4'd5: begin
+                if(rdata_tmp[23:18] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
+                else if(rdata_tmp[23:18] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
+                else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[17:11]};
+            end
+            4'd6: begin
+                if(rdata_tmp[23:17] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
+                else if(rdata_tmp[23:17] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
+                else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[16:10]};
+            end
+            4'd7: begin
+                if(rdata_tmp[23:16] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
+                else if(rdata_tmp[23:16] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
+                else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[15:9]};
+            end
+            4'd8: begin
+                if(rdata_tmp[23:15] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
+                else if(rdata_tmp[23:15] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
+                else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[14:8]};
+            end
+            4'd9: begin
+                if(rdata_tmp[23:14] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
+                else if(rdata_tmp[23:14] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
+                else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[13:7]};
+            end
+            4'd10: begin
+                if(rdata_tmp[23:13] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
+                else if(rdata_tmp[23:13] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
+                else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[12:6]};
+            end
+            4'd11: begin
+                if(rdata_tmp[23:12] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
+                else if(rdata_tmp[23:12] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
+                else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[11:5]};
+            end
+            4'd12: begin
+                if(rdata_tmp[23:11] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
+                else if(rdata_tmp[23:11] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
+                else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[10:4]};
+            end
+            4'd13: begin
+                if(rdata_tmp[23:10] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
+                else if(rdata_tmp[23:10] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
+                else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[9:3]};
+            end
+            4'd14: begin
+                if(rdata_tmp[23:9] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
+                else if(rdata_tmp[23:9] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
+                else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[8:2]};
+            end
+            4'd15: begin
+                if(rdata_tmp[23:8] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
+                else if(rdata_tmp[23:8] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
+                else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[7:1]};
+            end
+            4'd16: begin
+                if(rdata_tmp[23:7] != '0 && rdata_tmp >= 0) tr.data[i+1] = 8'b0111_1111;
+                else if(rdata_tmp[23:7] != '1 && rdata_tmp < 0) tr.data[i+1] = 8'b1000_0000;
+                else tr.data[i+1] = {rdata_tmp[31], rdata_tmp[6:0]};
+            end
             default: tr.data[i+1] = rdata_tmp[7:0];
         endcase
         rdata_tmp = 0;

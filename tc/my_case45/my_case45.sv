@@ -19,15 +19,15 @@ class my_pecell_apb_sequence extends uvm_sequence;
     //  Group: Variables
     my_pecell_register_model m_regmdl;
     uvm_status_e status;
-    uvm_reg_data_t reg_set_cycle0_w = 'h2;
-    uvm_reg_data_t reg_set_cycle1_w = 'h0;
+    uvm_reg_data_t reg_set_cycle0_w = 'h50;
+    uvm_reg_data_t reg_set_cycle1_w = 'hc3;
     uvm_reg_data_t reg_set_cycle2_w = 'h0;
     uvm_reg_data_t reg_set_cycle3_w = 'h0;
     uvm_reg_data_t reg_set_cycle0_r;
     uvm_reg_data_t reg_set_cycle1_r;
     uvm_reg_data_t reg_set_cycle2_r;
     uvm_reg_data_t reg_set_cycle3_r;
-    uvm_reg_data_t reg_reuse_w = 'h61;
+    uvm_reg_data_t reg_reuse_w = 'b0011_0001;
     uvm_reg_data_t reg_reuse_r;
 
     //  Group: Functions

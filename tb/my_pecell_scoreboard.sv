@@ -227,7 +227,7 @@ task my_pecell_scoreboard::check_reset_reg();
     m_regmdl.reg_set_cycle2.read(status, reg_set_cycle[23:16], UVM_BACKDOOR);
     m_regmdl.reg_set_cycle3.read(status, reg_set_cycle[31:24], UVM_BACKDOOR);
     m_regmdl.reg_reuse.read(status, reg_reuse, UVM_BACKDOOR);
-    if ((reg_set_cycle !== 'd2) || (reg_reuse !== 'h61)) begin
+    if ((reg_set_cycle !== 'hc350) || (reg_reuse !== 'h31)) begin
         `uvm_error(get_type_name(), "register reset value is not correct!")
     end
     

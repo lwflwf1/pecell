@@ -43,7 +43,7 @@ task my_pecell_apb_sequence::body();
     m_regmdl.reg_set_cycle1.write(status, 0, UVM_FRONTDOOR, .parent(this));
     m_regmdl.reg_set_cycle2.write(status, 0, UVM_FRONTDOOR, .parent(this));
     m_regmdl.reg_set_cycle3.write(status, 0, UVM_FRONTDOOR, .parent(this));
-    m_regmdl.reg_reuse.write(status, 'hf1, UVM_FRONTDOOR, .parent(this));
+    m_regmdl.reg_reuse.write(status, 'b1000_1001, UVM_FRONTDOOR, .parent(this));
 endtask: body
 
 

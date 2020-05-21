@@ -46,11 +46,11 @@ endclass: my_pecell_apb_sequence
 
 task my_pecell_apb_sequence::reset_reg();
     wait(my_pecell_top.m_if.rst_n == 'b0);
-    reg_set_cycle0_w = 2;
-    reg_set_cycle1_w = 0;
+    reg_set_cycle0_w = 'h50;
+    reg_set_cycle1_w = 'hc3;
     reg_set_cycle2_w = 0;
     reg_set_cycle3_w = 0;
-    reg_reuse_w = 'h61;
+    reg_reuse_w = 'b0011_0001;
     wait(my_pecell_top.m_if.rst_n == 'b1);
 endtask
 

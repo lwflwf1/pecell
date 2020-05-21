@@ -177,7 +177,7 @@ task my_pecell_reference_model::run_phase(uvm_phase phase);
         end
         forever begin
             wait(vif.rst_n == 'b0);
-            reg_reuse = 'h61;
+            reg_reuse = 'h31;
             wait(vif.rst_n == 'b1);
         end
     join
